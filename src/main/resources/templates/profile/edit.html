@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="ru" xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layout/base :: html(content=~{::main})}">
+<head>
+    <title>Редактировать профиль - AnimeFan</title>
+</head>
+<body>
+<main>
+    <div class="container py-4">
+        <div class="row justify-content-center">
+            <div class="col-md-8">
+                <div class="card">
+                    <div class="card-header">
+                        <h4 class="mb-0"><i class="bi bi-pencil"></i> Редактировать профиль</h4>
+                    </div>
+                    <div class="card-body">
+                        <form id="profileForm">
+                            <div class="text-center mb-4">
+                                <img th:src="${user.avatarUrl != null} ? ${user.avatarUrl} : 'https://via.placeholder.com/150x150?text=User'"
+                                     class="rounded-circle mb-3" width="150" height="150" style="object-fit: cover;">
+                                <div>
+                                    <label class="form-label">URL аватара</label>
+                                    <input type="url" class="form-control" name="avatarUrl" th:value="${user.avatarUrl}"
+                                           placeholder="https://...">
+                                </div>
+                            </div>
+
+                            <div class="mb-3">
+                                <label class="form-label">Имя пользователя</label>
+                                <input type="text" class="form-control" th:value="${user.username}" disabled>
+                                <small class="text-muted">Имя пользователя нельзя изменить</small>
+                            </div>
+
+                            <div class="mb-3">
+                                <label class="form-label">Отображаемое имя</label>
+                                <input type="text" class="form-control" name="displayName" th:value="${user.displayName}">
+                            </div>
+
+                            <div class="mb-3">
+                                <label class="form-label">О себе</label>
+                                <textarea class="form-control" name="bio" rows="3" th:text="${user.bio}"></textarea>
+                            </div>
+
+                            <div class="d-flex gap-2">
+                                <button type="submit" class="btn btn-primary">
+                                    <i class="bi bi-check-circle"></i> Сохранить
+                                </button>
+                                <a th:href="@{/profile}" class="btn btn-secondary">
+                                    <i class="bi bi-x-circle"></i> Отмена
+                                </a>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+
+                <div class="card mt-4">
+                    <div class="card-header">
+                        <h5 class="mb-0"><i class="bi bi-envelope"></i> Изменить email</h5>
+                    </div>
+                    <div class="card-body">
+                        <form id="emailForm">
+                            <div class="mb-3">
+                                <label class="form-label">Текущий email</label>
+                                <input type="email" class="form-control" th:value="${user.email}" disabled>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Новый email</label>
+                                <input type="email" class="form-control" name="email" required>
+                            </div>
+                            <button type="submit" class="btn btn-warning">
+                                <i class="bi bi-envelope"></i> Изменить email
+                            </button>
+                        </form>
+                    </div>
+                </div>
+
+                <div class="card mt-4">
+                    <div class="card-header">
+                        <h5 class="mb-0"><i class="bi bi-lock"></i> Изменить пароль</h5>
+                    </div>
+                    <div class="card-body">
+                        <form id="passwordForm">
+                            <div class="mb-3">
+                                <label class="form-label">Текущий пароль</label>
+                                <input type="password" class="form-control" name="oldPassword" required>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Новый пароль</label>
+                                <input type="password" class="form-control" name="newPassword" required minlength="6">
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Подтвердите новый пароль</label>
+                                <input type="password" class="form-control" name="confirmPassword" required minlength="6">
+                            </div>
+                            <button type="submit" class="btn btn-danger">
+                                <i class="bi bi-lock"></i> Изменить пароль
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</main>
+
+<script>
+document.getElementById('profileForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+    const formData = new FormData(this);
+
+    fetch('/api/v1/users/me', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+            avatarUrl: formData.get('avatarUrl'),
+            displayName: formData.get('displayName'),
+            bio: formData.get('bio')
+        })
+    }).then(response => {
+        if (response.ok) {
+            alert('Профиль обновлен!');
+            location.reload();
+        } else {
+            alert('Ошибка при обновлении');
+        }
+    });
+});
+
+document.getElementById('emailForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+    const email = this.email.value;
+
+    fetch('/api/v1/users/me/email', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: email })
+    }).then(response => {
+        if (response.ok) {
+            alert('Email обновлен!');
+            location.reload();
+        } else {
+            response.json().then(data => alert('Ошибка: ' + data.message));
+        }
+    });
+});
+
+document.getElementById('passwordForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+
+    if (this.newPassword.value !== this.confirmPassword.value) {
+        alert('Пароли не совпадают!');
+        return;
+    }
+
+    fetch('/api/v1/users/me/password', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+            oldPassword: this.oldPassword.value,
+            newPassword: this.newPassword.value
+        })
+    }).then(response => {
+        if (response.ok) {
+            alert('Пароль изменен!');
+            this.reset();
+        } else {
+            response.json().then(data => alert('Ошибка: ' + data.message));
+        }
+    });
+});
+</script>
+</body>
+</html>
