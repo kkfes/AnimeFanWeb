@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="ru" xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layout/base :: html(content=~{::main})}">
+<head>
+    <title>Управление эпизодами - AnimeFan Admin</title>
+</head>
+<body>
+<main>
+    <div class="container py-4">
+        <!-- Breadcrumb -->
+        <nav aria-label="breadcrumb" class="mb-4">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a th:href="@{/admin}">Админ панель</a></li>
+                <li class="breadcrumb-item"><a th:href="@{/admin/anime}">Аниме</a></li>
+                <li class="breadcrumb-item active" th:text="${anime.title}">Anime Title</li>
+            </ol>
+        </nav>
+
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h1><i class="bi bi-film"></i> Эпизоды: <span th:text="${anime.title}">Anime</span></h1>
+            <div>
+                <a th:href="@{/admin/anime/{id}/edit(id=${anime.id})}" class="btn btn-outline-primary">
+                    <i class="bi bi-pencil"></i> Редактировать аниме
+                </a>
+                <a th:href="@{/anime/{id}(id=${anime.id})}" class="btn btn-outline-secondary" target="_blank">
+                    <i class="bi bi-eye"></i> Просмотр
+                </a>
+            </div>
+        </div>
+
+        <div class="row">
+            <!-- Add Episode Form -->
+            <div class="col-md-4">
+                <div class="card">
+                    <div class="card-header bg-success text-white">
+                        <h5 class="mb-0"><i class="bi bi-plus-circle"></i> Добавить эпизод</h5>
+                    </div>
+                    <div class="card-body">
+                        <form th:action="@{/admin/anime/{id}/episodes/add(id=${anime.id})}" method="post">
+                            <div class="mb-3">
+                                <label class="form-label">Номер эпизода *</label>
+                                <input type="number" name="number" class="form-control" required min="1"
+                                       th:value="${anime.episodes != null ? anime.episodes.size() + 1 : 1}">
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Название *</label>
+                                <input type="text" name="title" class="form-control" required
+                                       placeholder="Название эпизода">
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">URL видео (iframe)</label>
+                                <input type="url" name="videoUrl" class="form-control"
+                                       placeholder="https://aniliberty.top/anime/video/episode/...">
+                                <small class="form-text text-muted">
+                                    <i class="bi bi-info-circle"></i> Вставьте ссылку на эпизод (например, с aniliberty.top).
+                                    Видео будет встроено через iframe.
+                                </small>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">URL превью (thumbnail)</label>
+                                <input type="url" name="thumbnailUrl" class="form-control"
+                                       placeholder="https://...">
+                                <small class="form-text text-muted">
+                                    <i class="bi bi-image"></i> Картинка для списка эпизодов
+                                </small>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Длительность (мин)</label>
+                                <input type="number" name="duration" class="form-control" value="24" min="1">
+                            </div>
+                            <button type="submit" class="btn btn-success w-100">
+                                <i class="bi bi-plus"></i> Добавить
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Episodes List -->
+            <div class="col-md-8">
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="mb-0">
+                            <i class="bi bi-list-ol"></i> Список эпизодов
+                            <span class="badge bg-primary" th:text="${anime.episodes != null ? anime.episodes.size() : 0}">0</span>
+                        </h5>
+                    </div>
+                    <div class="card-body p-0">
+                        <div th:if="${anime.episodes == null or anime.episodes.isEmpty()}" class="text-center py-5 text-muted">
+                            <i class="bi bi-inbox display-4"></i>
+                            <p class="mt-2">Эпизоды ещё не добавлены</p>
+                        </div>
+
+                        <div class="table-responsive" th:if="${anime.episodes != null and !anime.episodes.isEmpty()}">
+                            <table class="table table-hover mb-0">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th width="60">#</th>
+                                        <th>Название</th>
+                                        <th width="100">Длит.</th>
+                                        <th width="200">Видео</th>
+                                        <th width="150">Действия</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr th:each="episode : ${anime.episodes}">
+                                        <td>
+                                            <span class="badge bg-secondary" th:text="${episode.number}">1</span>
+                                        </td>
+                                        <td th:text="${episode.title}">Episode Title</td>
+                                        <td>
+                                            <small class="text-muted" th:text="${episode.duration + ' мин'}">24 мин</small>
+                                        </td>
+                                        <td>
+                                            <span th:if="${episode.videoUrl != null}" class="badge bg-success">
+                                                <i class="bi bi-check"></i> Есть
+                                            </span>
+                                            <span th:if="${episode.videoUrl == null}" class="badge bg-warning text-dark">
+                                                <i class="bi bi-x"></i> Нет
+                                            </span>
+                                        </td>
+                                        <td>
+                                            <button type="button" class="btn btn-sm btn-outline-primary"
+                                                    data-bs-toggle="modal"
+                                                    th:data-bs-target="'#editModal' + ${episode.number}">
+                                                <i class="bi bi-pencil"></i>
+                                            </button>
+                                            <form th:action="@{/admin/anime/{id}/episodes/{num}/delete(id=${anime.id}, num=${episode.number})}"
+                                                  method="post" class="d-inline"
+                                                  onsubmit="return confirm('Удалить эпизод?')">
+                                                <button type="submit" class="btn btn-sm btn-outline-danger">
+                                                    <i class="bi bi-trash"></i>
+                                                </button>
+                                            </form>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Edit Modals -->
+    <div th:each="episode : ${anime.episodes}">
+        <div class="modal fade" th:id="'editModal' + ${episode.number}" tabindex="-1">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <form th:action="@{/admin/anime/{id}/episodes/{num}/update(id=${anime.id}, num=${episode.number})}" method="post">
+                        <div class="modal-header">
+                            <h5 class="modal-title">Редактировать эпизод <span th:text="${episode.number}">1</span></h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                        </div>
+                        <div class="modal-body">
+                            <div class="mb-3">
+                                <label class="form-label">Название</label>
+                                <input type="text" name="title" class="form-control" th:value="${episode.title}" required>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">URL видео (iframe)</label>
+                                <input type="url" name="videoUrl" class="form-control" th:value="${episode.videoUrl}"
+                                       placeholder="https://aniliberty.top/anime/video/episode/...">
+                                <small class="form-text text-muted">
+                                    <i class="bi bi-info-circle"></i> Вставьте ссылку на эпизод
+                                </small>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">URL превью (thumbnail)</label>
+                                <input type="url" name="thumbnailUrl" class="form-control" th:value="${episode.thumbnailUrl}"
+                                       placeholder="https://...">
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Длительность (мин)</label>
+                                <input type="number" name="duration" class="form-control" th:value="${episode.duration}" min="1">
+                            </div>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Отмена</button>
+                            <button type="submit" class="btn btn-primary">Сохранить</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</main>
+</body>
+</html>

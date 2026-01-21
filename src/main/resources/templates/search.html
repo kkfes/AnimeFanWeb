@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html lang="ru" xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
+      th:replace="~{layout/base :: html(content=~{::main})}">
+<head>
+    <title>Поиск - AnimeFan</title>
+</head>
+<body>
+<main>
+    <div class="container py-5">
+        <h1 class="section-title mb-4"><i class="bi bi-search"></i> Поиск аниме</h1>
+
+        <!-- Search Form -->
+        <div class="card glass-effect mb-4">
+            <div class="card-body p-4">
+                <form th:action="@{/search}" method="get" id="searchForm">
+                    <div class="row g-3">
+                        <div class="col-12">
+                            <div class="search-input-wrapper d-flex">
+                                <input type="text" name="q" class="form-control form-control-lg flex-grow-1"
+                                       th:value="${searchDTO?.query}"
+                                       placeholder="Поиск по названию или описанию...">
+                                <button type="submit" class="btn btn-primary btn-lg">
+                                    <i class="bi bi-search"></i> Найти
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Genre Chips -->
+                        <div class="col-12">
+                            <label class="form-label"><i class="bi bi-tags text-accent"></i> Жанры</label>
+                            <div class="chip-picker" id="genrePicker">
+                                <label th:each="genre : ${allGenres}" class="chip-picker-item"
+                                       th:classappend="${searchDTO?.genres != null and searchDTO.genres.contains(genre)} ? 'selected'">
+                                    <input type="checkbox" name="genres" th:value="${genre}"
+                                           th:checked="${searchDTO?.genres != null and searchDTO.genres.contains(genre)}"
+                                           onchange="this.parentElement.classList.toggle('selected', this.checked)">
+                                    <span th:text="${genre}">Genre</span>
+                                </label>
+                            </div>
+                        </div>
+
+                        <!-- Filters Row -->
+                        <div class="col-12">
+                            <div class="row g-3">
+                                <!-- Status Pills -->
+                                <div class="col-md-6 col-lg-4">
+                                    <label class="form-label"><i class="bi bi-broadcast text-accent"></i> Статус</label>
+                                    <div class="pill-picker">
+                                        <label class="pill-picker-item" th:classappend="${searchDTO?.status == null or searchDTO?.status == ''} ? 'active'">
+                                            <input type="radio" name="status" value=""
+                                                   th:checked="${searchDTO?.status == null or searchDTO?.status == ''}"
+                                                   onchange="updatePillPicker(this)">
+                                            Все
+                                        </label>
+                                        <label class="pill-picker-item" th:classappend="${searchDTO?.status == 'ONGOING'} ? 'active'">
+                                            <input type="radio" name="status" value="ONGOING"
+                                                   th:checked="${searchDTO?.status == 'ONGOING'}"
+                                                   onchange="updatePillPicker(this)">
+                                            <i class="bi bi-circle-fill text-success" style="font-size: 0.5rem;"></i> Онгоинг
+                                        </label>
+                                        <label class="pill-picker-item" th:classappend="${searchDTO?.status == 'COMPLETED'} ? 'active'">
+                                            <input type="radio" name="status" value="COMPLETED"
+                                                   th:checked="${searchDTO?.status == 'COMPLETED'}"
+                                                   onchange="updatePillPicker(this)">
+                                            <i class="bi bi-check-circle-fill text-primary" style="font-size: 0.6rem;"></i> Завершено
+                                        </label>
+                                        <label class="pill-picker-item" th:classappend="${searchDTO?.status == 'UPCOMING'} ? 'active'">
+                                            <input type="radio" name="status" value="UPCOMING"
+                                                   th:checked="${searchDTO?.status == 'UPCOMING'}"
+                                                   onchange="updatePillPicker(this)">
+                                            <i class="bi bi-clock text-warning" style="font-size: 0.6rem;"></i> Анонс
+                                        </label>
+                                    </div>
+                                </div>
+
+                                <!-- Type Pills -->
+                                <div class="col-md-6 col-lg-4">
+                                    <label class="form-label"><i class="bi bi-film text-accent"></i> Тип</label>
+                                    <div class="pill-picker">
+                                        <label class="pill-picker-item" th:classappend="${searchDTO?.type == null or searchDTO?.type == ''} ? 'active'">
+                                            <input type="radio" name="type" value=""
+                                                   th:checked="${searchDTO?.type == null or searchDTO?.type == ''}"
+                                                   onchange="updatePillPicker(this)">
+                                            Все
+                                        </label>
+                                        <label class="pill-picker-item" th:classappend="${searchDTO?.type == 'TV'} ? 'active'">
+                                            <input type="radio" name="type" value="TV"
+                                                   th:checked="${searchDTO?.type == 'TV'}"
+                                                   onchange="updatePillPicker(this)">
+                                            TV
+                                        </label>
+                                        <label class="pill-picker-item" th:classappend="${searchDTO?.type == 'MOVIE'} ? 'active'">
+                                            <input type="radio" name="type" value="MOVIE"
+                                                   th:checked="${searchDTO?.type == 'MOVIE'}"
+                                                   onchange="updatePillPicker(this)">
+                                            Фильм
+                                        </label>
+                                        <label class="pill-picker-item" th:classappend="${searchDTO?.type == 'OVA'} ? 'active'">
+                                            <input type="radio" name="type" value="OVA"
+                                                   th:checked="${searchDTO?.type == 'OVA'}"
+                                                   onchange="updatePillPicker(this)">
+                                            OVA
+                                        </label>
+                                        <label class="pill-picker-item" th:classappend="${searchDTO?.type == 'ONA'} ? 'active'">
+                                            <input type="radio" name="type" value="ONA"
+                                                   th:checked="${searchDTO?.type == 'ONA'}"
+                                                   onchange="updatePillPicker(this)">
+                                            ONA
+                                        </label>
+                                    </div>
+                                </div>
+
+                                <!-- Year Range -->
+                                <div class="col-md-6 col-lg-4">
+                                    <label class="form-label"><i class="bi bi-calendar text-accent"></i> Год выхода</label>
+                                    <div class="row g-2">
+                                        <div class="col">
+                                            <input type="number" name="yearFrom" class="form-control"
+                                                   placeholder="От" th:value="${searchDTO?.yearFrom}" min="1960" max="2030">
+                                        </div>
+                                        <div class="col-auto d-flex align-items-center text-muted">—</div>
+                                        <div class="col">
+                                            <input type="number" name="yearTo" class="form-control"
+                                                   placeholder="До" th:value="${searchDTO?.yearTo}" min="1960" max="2030">
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Additional Filters -->
+                        <div class="col-12">
+                            <div class="row g-3 align-items-end">
+                                <div class="col-md-3 col-lg-2">
+                                    <label class="form-label"><i class="bi bi-star text-accent"></i> Мин. рейтинг</label>
+                                    <input type="number" name="ratingFrom" class="form-control"
+                                           th:value="${searchDTO?.ratingFrom}" min="0" max="10" step="0.5" placeholder="0.0">
+                                </div>
+
+                                <div class="col-md-3 col-lg-2">
+                                    <label class="form-label"><i class="bi bi-sort-down text-accent"></i> Сортировка</label>
+                                    <select name="sortBy" class="form-select">
+                                        <option value="rating" th:selected="${searchDTO?.sortBy == 'rating'}">По рейтингу</option>
+                                        <option value="releaseYear" th:selected="${searchDTO?.sortBy == 'releaseYear'}">По году</option>
+                                        <option value="title" th:selected="${searchDTO?.sortBy == 'title'}">По названию</option>
+                                        <option value="viewCount" th:selected="${searchDTO?.sortBy == 'viewCount'}">По просмотрам</option>
+                                    </select>
+                                </div>
+
+                                <div class="col-md-3 col-lg-2">
+                                    <label class="form-label"><i class="bi bi-arrow-down-up text-accent"></i> Порядок</label>
+                                    <select name="sortDirection" class="form-select">
+                                        <option value="desc" th:selected="${searchDTO?.sortDirection == 'desc'}">По убыванию</option>
+                                        <option value="asc" th:selected="${searchDTO?.sortDirection == 'asc'}">По возрастанию</option>
+                                    </select>
+                                </div>
+
+                                <div class="col-md-3 col-lg-2">
+                                    <button type="button" class="btn btn-outline-secondary w-100" onclick="resetFilters()">
+                                        <i class="bi bi-x-circle"></i> Сбросить
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <script>
+        function updatePillPicker(radio) {
+            const picker = radio.closest('.pill-picker');
+            picker.querySelectorAll('.pill-picker-item').forEach(item => {
+                item.classList.remove('active');
+            });
+            radio.parentElement.classList.add('active');
+        }
+
+        function resetFilters() {
+            const form = document.getElementById('searchForm');
+            // Reset checkboxes
+            form.querySelectorAll('.chip-picker-item').forEach(item => {
+                item.classList.remove('selected');
+                item.querySelector('input').checked = false;
+            });
+            // Reset radio buttons to first option
+            form.querySelectorAll('.pill-picker').forEach(picker => {
+                picker.querySelectorAll('.pill-picker-item').forEach((item, index) => {
+                    item.classList.toggle('active', index === 0);
+                    item.querySelector('input').checked = index === 0;
+                });
+            });
+            // Reset other inputs
+            form.querySelectorAll('input[type="number"]').forEach(input => input.value = '');
+            form.querySelectorAll('select').forEach(select => select.selectedIndex = 0);
+        }
+        </script>
+
+        <!-- Results -->
+        <div th:if="${query != null}" class="mb-3">
+            <h5>Результаты поиска по запросу: "<span th:text="${query}">query</span>"
+                <small class="text-muted">(<span th:text="${animeList.totalElements}">0</span> найдено)</small>
+            </h5>
+        </div>
+
+        <div class="row row-cols-2 row-cols-md-4 row-cols-lg-6 g-4">
+            <div class="col" th:each="anime : ${animeList.content}">
+                <div class="card h-100 anime-card shadow-sm">
+                    <div class="position-relative">
+                        <img th:src="${anime.posterUrl != null} ? ${anime.posterUrl} : 'https://via.placeholder.com/300x450?text=No+Image'"
+                             class="card-img-top" style="height: 240px; object-fit: cover;">
+                        <span class="position-absolute top-0 end-0 badge bg-success m-2">
+                            <i class="bi bi-star-fill"></i> <span th:text="${#numbers.formatDecimal(anime.rating, 1, 1)}">0.0</span>
+                        </span>
+                    </div>
+                    <div class="card-body p-2">
+                        <h6 class="card-title small text-truncate" th:text="${anime.title}">Anime Title</h6>
+                        <small class="text-muted" th:text="${anime.releaseYear}">2024</small>
+                    </div>
+                    <a th:href="@{/anime/{id}(id=${anime.id})}" class="stretched-link"></a>
+                </div>
+            </div>
+        </div>
+
+        <div class="text-center py-5" th:if="${animeList.content.isEmpty()}">
+            <i class="bi bi-inbox display-1 text-muted"></i>
+            <h3 class="text-muted mt-3">Ничего не найдено</h3>
+            <p class="text-muted">Попробуйте изменить параметры поиска</p>
+        </div>
+
+        <!-- Pagination -->
+        <nav th:if="${animeList.totalPages > 1}" class="mt-4">
+            <ul class="pagination justify-content-center">
+                <li class="page-item" th:classappend="${animeList.first} ? 'disabled'">
+                    <a class="page-link" th:href="@{/search(q=${query}, page=${animeList.number - 1})}">
+                        <i class="bi bi-chevron-left"></i>
+                    </a>
+                </li>
+                <li th:each="i : ${#numbers.sequence(0, animeList.totalPages - 1)}"
+                    th:if="${i >= animeList.number - 2 and i <= animeList.number + 2}"
+                    class="page-item" th:classappend="${i == animeList.number} ? 'active'">
+                    <a class="page-link" th:href="@{/search(q=${query}, page=${i})}" th:text="${i + 1}">1</a>
+                </li>
+                <li class="page-item" th:classappend="${animeList.last} ? 'disabled'">
+                    <a class="page-link" th:href="@{/search(q=${query}, page=${animeList.number + 1})}">
+                        <i class="bi bi-chevron-right"></i>
+                    </a>
+                </li>
+            </ul>
+        </nav>
+    </div>
+</main>
+</body>
+</html>

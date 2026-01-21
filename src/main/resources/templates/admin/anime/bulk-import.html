@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="ru" xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layout/base :: html(content=~{::main})}">
+<head>
+    <title>Массовый импорт аниме - AnimeFan</title>
+</head>
+<body>
+<main>
+    <div class="container py-4">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h1><i class="bi bi-cloud-upload"></i> Массовый импорт аниме</h1>
+            <a th:href="@{/admin/anime}" class="btn btn-outline-secondary">
+                <i class="bi bi-arrow-left"></i> Назад к списку
+            </a>
+        </div>
+
+        <!-- Alerts -->
+        <div th:if="${success}" class="alert alert-success alert-dismissible fade show">
+            <i class="bi bi-check-circle"></i> <span th:text="${success}">Success</span>
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+        <div th:if="${error}" class="alert alert-danger alert-dismissible fade show">
+            <i class="bi bi-exclamation-triangle"></i> <span th:text="${error}">Error</span>
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+
+        <!-- Import Results -->
+        <div th:if="${importResults}" class="alert"
+             th:classappend="${importResults.errors != null and !importResults.errors.isEmpty()} ? 'alert-warning' : 'alert-success'">
+            <h5><i class="bi bi-info-circle"></i> Результаты импорта:</h5>
+            <ul class="mb-0">
+                <li>Успешно импортировано: <strong th:text="${importResults.successCount}">0</strong></li>
+                <li>Пропущено (дубликаты): <strong th:text="${importResults.skippedCount}">0</strong></li>
+                <li>Ошибок: <strong th:text="${importResults.errorCount}">0</strong></li>
+            </ul>
+            <div th:if="${importResults.errors != null and !importResults.errors.isEmpty()}" class="mt-2">
+                <strong>Ошибки:</strong>
+                <ul>
+                    <li th:each="err : ${importResults.errors}" th:text="${err}">Error</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="row">
+            <!-- JSON Import -->
+            <div class="col-lg-6 mb-4">
+                <div class="card h-100">
+                    <div class="card-header">
+                        <h5 class="mb-0"><i class="bi bi-file-earmark-code"></i> Импорт из JSON</h5>
+                    </div>
+                    <div class="card-body">
+                        <form th:action="@{/admin/anime/bulk-import/json}" method="post">
+                            <div class="mb-3">
+                                <label class="form-label">JSON данные</label>
+                                <textarea name="jsonData" class="form-control" rows="15"
+                                          placeholder='[
+  {
+    "title": "Название аниме",
+    "description": "Описание аниме (минимум 10 символов)",
+    "genres": ["Action", "Fantasy"],
+    "releaseYear": 2024,
+    "type": "TV",
+    "status": "ONGOING",
+    "episodeCount": 12,
+    "posterUrl": "https://...",
+    "bannerUrl": "https://...",
+    "trailerUrl": "https://..."
+  },
+  {
+    "title": "Другое аниме",
+    "description": "Описание второго аниме",
+    "genres": ["Drama", "Romance"],
+    "releaseYear": 2023,
+    "type": "MOVIE",
+    "status": "COMPLETED"
+  }
+]' required></textarea>
+                                <small class="text-muted">
+                                    Введите массив JSON объектов аниме. Обязательные поля: title, description, genres
+                                </small>
+                            </div>
+                            <div class="form-check mb-3">
+                                <input type="checkbox" class="form-check-input" name="skipDuplicates" id="skipDuplicatesJson" checked>
+                                <label class="form-check-label" for="skipDuplicatesJson">
+                                    Пропускать дубликаты (по названию)
+                                </label>
+                            </div>
+                            <button type="submit" class="btn btn-primary w-100">
+                                <i class="bi bi-cloud-upload"></i> Импортировать из JSON
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Quick Add Multiple -->
+            <div class="col-lg-6 mb-4">
+                <div class="card h-100">
+                    <div class="card-header">
+                        <h5 class="mb-0"><i class="bi bi-list-check"></i> Быстрое добавление</h5>
+                    </div>
+                    <div class="card-body">
+                        <form th:action="@{/admin/anime/bulk-import/quick}" method="post" id="quickAddForm">
+                            <p class="text-muted mb-3">
+                                Добавьте несколько аниме используя упрощенный формат (по одному на строку):
+                                <code>Название | Описание | Жанры (через запятую) | Год | Тип | Статус</code>
+                            </p>
+                            <div class="mb-3">
+                                <textarea name="quickData" class="form-control font-monospace" rows="15"
+                                          placeholder="Naruto | История о ниндзя, который мечтает стать Хокаге | Action, Adventure, Shounen | 2002 | TV | COMPLETED
+Attack on Titan | Человечество борется за выживание против титанов | Action, Drama, Fantasy | 2013 | TV | COMPLETED
+Your Name | Романтическая история о двух подростках | Romance, Drama, Fantasy | 2016 | MOVIE | COMPLETED" required></textarea>
+                            </div>
+                            <div class="form-check mb-3">
+                                <input type="checkbox" class="form-check-input" name="skipDuplicates" id="skipDuplicatesQuick" checked>
+                                <label class="form-check-label" for="skipDuplicatesQuick">
+                                    Пропускать дубликаты (по названию)
+                                </label>
+                            </div>
+                            <button type="submit" class="btn btn-success w-100">
+                                <i class="bi bi-plus-circle"></i> Быстро добавить
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Help Section -->
+        <div class="card mt-4">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="bi bi-question-circle"></i> Справка по формату</h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <h6>Доступные типы (type):</h6>
+                        <ul class="list-unstyled">
+                            <li><code>TV</code> - Телесериал</li>
+                            <li><code>MOVIE</code> - Фильм</li>
+                            <li><code>OVA</code> - OVA</li>
+                            <li><code>ONA</code> - ONA</li>
+                            <li><code>SPECIAL</code> - Спецвыпуск</li>
+                        </ul>
+                    </div>
+                    <div class="col-md-6">
+                        <h6>Доступные статусы (status):</h6>
+                        <ul class="list-unstyled">
+                            <li><code>ONGOING</code> - Выходит</li>
+                            <li><code>COMPLETED</code> - Завершено</li>
+                            <li><code>UPCOMING</code> - Анонсировано</li>
+                        </ul>
+                    </div>
+                </div>
+                <h6 class="mt-3">Доступные жанры:</h6>
+                <div class="d-flex flex-wrap gap-1">
+                    <span class="badge bg-secondary">Action</span>
+                    <span class="badge bg-secondary">Adventure</span>
+                    <span class="badge bg-secondary">Comedy</span>
+                    <span class="badge bg-secondary">Drama</span>
+                    <span class="badge bg-secondary">Fantasy</span>
+                    <span class="badge bg-secondary">Horror</span>
+                    <span class="badge bg-secondary">Mystery</span>
+                    <span class="badge bg-secondary">Romance</span>
+                    <span class="badge bg-secondary">Sci-Fi</span>
+                    <span class="badge bg-secondary">Slice of Life</span>
+                    <span class="badge bg-secondary">Sports</span>
+                    <span class="badge bg-secondary">Supernatural</span>
+                    <span class="badge bg-secondary">Thriller</span>
+                    <span class="badge bg-secondary">Shounen</span>
+                    <span class="badge bg-secondary">Seinen</span>
+                    <span class="badge bg-secondary">Shoujo</span>
+                    <span class="badge bg-secondary">Mecha</span>
+                    <span class="badge bg-secondary">Isekai</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</main>
+</body>
+</html>

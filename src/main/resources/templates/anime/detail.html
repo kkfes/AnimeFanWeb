@@ -1,0 +1,560 @@
+<!DOCTYPE html>
+<html lang="ru" xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
+      th:replace="~{layout/base :: html(content=~{::main})}">
+<head>
+    <title th:text="${anime.title + ' - AnimeFan'}">Anime - AnimeFan</title>
+</head>
+<body>
+<main>
+    <!-- Banner -->
+    <div class="text-white py-5" style="background: linear-gradient(135deg, #222222 0%, #333333 100%);">
+        <div class="container">
+            <div class="row">
+                <!-- Poster -->
+                <div class="col-md-3 text-center mb-4 mb-md-0">
+                    <img th:src="${anime.posterUrl != null ? anime.posterUrl : 'https://via.placeholder.com/300x450?text=No+Image'}"
+                         class="img-fluid rounded shadow-float"
+                         th:alt="${anime.title}"
+                         style="max-height: 400px; border-radius: 12px;">
+                </div>
+
+                <!-- Info -->
+                <div class="col-md-9">
+                    <h1 class="fw-bold mb-2" th:text="${anime.title}">Anime Title</h1>
+                    <p class="opacity-75 mb-1" th:if="${anime.titleEnglish != null}" th:text="${anime.titleEnglish}">English Title</p>
+                    <p class="opacity-50 mb-3" th:if="${anime.titleJapanese != null}" th:text="${anime.titleJapanese}">日本語タイトル</p>
+
+                    <!-- Rating -->
+                    <div class="d-flex align-items-center gap-3 mb-4">
+                        <div class="rating-badge d-flex align-items-center gap-2">
+                            <i class="bi bi-star-fill"></i>
+                            <span class="fs-4 fw-bold" th:text="${#numbers.formatDecimal(anime.rating, 1, 1)}">0.0</span>
+                            <small class="opacity-75" th:text="${'(' + anime.ratingCount + ' оценок)'}">votes</small>
+                        </div>
+                        <div class="opacity-75">
+                            <i class="bi bi-eye"></i> <span th:text="${anime.viewCount}">0</span>
+                        </div>
+                        <div class="opacity-75">
+                            <i class="bi bi-heart-fill text-danger"></i> <span th:text="${anime.favoriteCount}">0</span>
+                        </div>
+                    </div>
+
+                    <!-- Genres -->
+                    <div class="mb-4">
+                        <a th:each="genre : ${anime.genres}"
+                           th:href="@{/genre/{g}(g=${genre})}"
+                           th:text="${genre}"
+                           class="badge bg-primary text-decoration-none me-1 mb-1"
+                           style="padding: 0.5rem 1rem;">
+                            Genre
+                        </a>
+                    </div>
+
+                    <!-- Meta Info -->
+                    <div class="row mb-4 glass-effect rounded p-3" style="background: rgba(255,255,255,0.1);">
+                        <div class="col-6 col-md-3 text-center">
+                            <small class="opacity-75 d-block">Тип</small>
+                            <span class="fw-medium" th:text="${anime.type != null ? anime.type : 'N/A'}">TV</span>
+                        </div>
+                        <div class="col-6 col-md-3 text-center">
+                            <small class="opacity-75 d-block">Эпизодов</small>
+                            <span class="fw-medium" th:text="${anime.episodeCount != null ? anime.episodeCount : '?'}">12</span>
+                        </div>
+                        <div class="col-6 col-md-3 text-center">
+                            <small class="opacity-75 d-block">Статус</small>
+                            <span class="fw-medium" th:text="${anime.status != null ? anime.status : 'N/A'}">COMPLETED</span>
+                        </div>
+                        <div class="col-6 col-md-3 text-center">
+                            <small class="opacity-75 d-block">Год</small>
+                            <span class="fw-medium" th:text="${anime.releaseYear}">2024</span>
+                        </div>
+                    </div>
+
+                    <!-- Studio -->
+                    <div class="mb-4" th:if="${anime.studioName != null}">
+                        <small class="opacity-75">Студия:</small>
+                        <span class="fw-medium" th:text="${anime.studioName}">Studio Name</span>
+                    </div>
+
+                    <!-- User Actions -->
+                    <div class="d-flex gap-2 flex-wrap" sec:authorize="isAuthenticated()">
+                        <div class="dropdown">
+                            <button class="btn dropdown-toggle" data-bs-toggle="dropdown" id="listStatusBtn"
+                                    th:classappend="${userRelation != null ? 'btn-success' : 'btn-primary'}">
+                                <i class="bi" th:classappend="${userRelation != null ? 'bi-check-circle-fill' : 'bi-plus-circle'}" id="listStatusIcon"></i>
+                                <span id="listStatusText" th:text="${userRelation != null ? userRelation.status.displayName : 'Добавить в список'}">
+                                    Добавить в список
+                                </span>
+                            </button>
+                            <ul class="dropdown-menu">
+                                <li><a class="dropdown-item add-to-list" href="#" data-status="WATCHING" data-label="Смотрю" th:data-anime-id="${anime.id}">
+                                    <i class="bi bi-play-circle text-primary"></i> Смотрю
+                                </a></li>
+                                <li><a class="dropdown-item add-to-list" href="#" data-status="COMPLETED" data-label="Просмотрено" th:data-anime-id="${anime.id}">
+                                    <i class="bi bi-check-circle text-success"></i> Просмотрено
+                                </a></li>
+                                <li><a class="dropdown-item add-to-list" href="#" data-status="ON_HOLD" data-label="Отложено" th:data-anime-id="${anime.id}">
+                                    <i class="bi bi-pause-circle text-warning"></i> Отложено
+                                </a></li>
+                                <li><a class="dropdown-item add-to-list" href="#" data-status="DROPPED" data-label="Брошено" th:data-anime-id="${anime.id}">
+                                    <i class="bi bi-x-circle text-danger"></i> Брошено
+                                </a></li>
+                                <li><a class="dropdown-item add-to-list" href="#" data-status="PLAN_TO_WATCH" data-label="Запланировано" th:data-anime-id="${anime.id}">
+                                    <i class="bi bi-bookmark text-info"></i> Запланировано
+                                </a></li>
+                                <li th:if="${userRelation != null}"><hr class="dropdown-divider"></li>
+                                <li th:if="${userRelation != null}">
+                                    <a class="dropdown-item text-danger remove-from-list" href="#" th:data-anime-id="${anime.id}">
+                                        <i class="bi bi-trash"></i> Удалить из списка
+                                    </a>
+                                </li>
+                            </ul>
+                        </div>
+
+                        <button class="btn toggle-favorite"
+                                th:classappend="${(userRelation != null and userRelation.favorite) ? 'btn-danger' : 'btn-outline-danger'}"
+                                th:data-anime-id="${anime.id}">
+                            <i class="bi" th:classappend="${(userRelation != null and userRelation.favorite) ? 'bi-heart-fill' : 'bi-heart'}"></i>
+                            <span th:text="${(userRelation != null and userRelation.favorite) ? 'В избранном' : 'В избранное'}">В избранное</span>
+                        </button>
+                    </div>
+
+                    <div sec:authorize="!isAuthenticated()" class="mt-3">
+                        <a th:href="@{/login}" class="btn btn-outline-light">
+                            <i class="bi bi-box-arrow-in-right"></i> Войдите, чтобы добавить в список
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="container py-4">
+        <!-- Tabs -->
+        <ul class="nav nav-tabs mb-4" role="tablist">
+            <li class="nav-item">
+                <a class="nav-link active" data-bs-toggle="tab" href="#description">Описание</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" data-bs-toggle="tab" href="#episodes">
+                    Эпизоды <span class="badge bg-secondary" th:text="${anime.episodes != null ? anime.episodes.size() : 0}">0</span>
+                </a>
+            </li>
+            <li class="nav-item" th:if="${anime.relatedAnime != null and !anime.relatedAnime.isEmpty()}">
+                <a class="nav-link" data-bs-toggle="tab" href="#related">
+                    Связанные <span class="badge bg-info" th:text="${anime.relatedAnime.size()}">0</span>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" data-bs-toggle="tab" href="#reviews">
+                    Отзывы <span class="badge bg-secondary" th:text="${reviews.totalElements}">0</span>
+                </a>
+            </li>
+        </ul>
+
+        <div class="tab-content">
+            <!-- Description Tab -->
+            <div class="tab-pane fade show active" id="description">
+                <div class="card">
+                    <div class="card-body">
+                        <h5>Описание</h5>
+                        <p th:text="${anime.description}" style="white-space: pre-line;">Description</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Episodes Tab -->
+            <div class="tab-pane fade" id="episodes">
+                <div class="card">
+                    <div class="card-body p-0">
+                        <div class="episodes-list-detail" th:if="${anime.episodes != null and !anime.episodes.isEmpty()}">
+                            <a th:each="episode : ${anime.episodes}"
+                               th:href="@{/anime/{id}/watch/{ep}(id=${anime.id}, ep=${episode.number})}"
+                               class="episode-item-detail d-flex align-items-center gap-3 p-3 text-decoration-none">
+                                <!-- Thumbnail -->
+                                <div class="episode-thumb-detail">
+                                    <img th:if="${episode.thumbnailUrl != null}"
+                                         th:src="${episode.thumbnailUrl}"
+                                         alt="Thumbnail">
+                                    <div th:if="${episode.thumbnailUrl == null}" class="episode-thumb-placeholder">
+                                        <i class="bi bi-play-circle-fill"></i>
+                                    </div>
+                                    <span class="episode-duration-badge" th:if="${episode.duration != null}"
+                                          th:text="${episode.duration + ' мин'}">24 мин</span>
+                                </div>
+                                <!-- Info -->
+                                <div class="flex-grow-1">
+                                    <h6 class="mb-1">
+                                        <span class="badge bg-primary me-2" th:text="|Эпизод ${episode.number}|">Эп. 1</span>
+                                        <span th:if="${episode.title != null}" th:text="${episode.title}">Название эпизода</span>
+                                    </h6>
+                                    <small class="text-muted" th:if="${episode.description != null}"
+                                           th:text="${#strings.abbreviate(episode.description, 100)}">Описание...</small>
+                                </div>
+                                <!-- Play Button -->
+                                <div class="ms-auto">
+                                    <span class="btn btn-primary btn-sm" th:if="${episode.videoUrl != null}">
+                                        <i class="bi bi-play-fill"></i> Смотреть
+                                    </span>
+                                    <span class="btn btn-outline-secondary btn-sm disabled" th:if="${episode.videoUrl == null}">
+                                        <i class="bi bi-lock"></i> Недоступно
+                                    </span>
+                                </div>
+                            </a>
+                        </div>
+                        <p class="text-muted text-center py-4 m-0" th:if="${anime.episodes == null or anime.episodes.isEmpty()}">
+                            <i class="bi bi-film display-4 d-block mb-2"></i>
+                            Эпизоды пока не добавлены
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Related Tab -->
+            <div class="tab-pane fade" id="related" th:if="${anime.relatedAnime != null and !anime.relatedAnime.isEmpty()}">
+                <div class="card">
+                    <div class="card-body">
+                        <!-- Current Anime Card (always visible in Related tab) -->
+                        <div class="mb-4">
+                            <div class="row row-cols-2 row-cols-md-4 row-cols-lg-6 g-3">
+                                <div class="col">
+                                    <div class="card h-100 anime-card position-relative overflow-hidden">
+                                        <div class="position-absolute top-0 start-0 m-2 z-1">
+                                            <span class="badge bg-primary">Текущий</span>
+                                        </div>
+                                        <img th:src="${anime.posterUrl != null ? anime.posterUrl : 'https://via.placeholder.com/150x220?text=No'}"
+                                             class="card-img-top" style="height: 180px; object-fit: cover;">
+                                        <div class="card-body p-2">
+                                            <h6 class="card-title small mb-0 text-truncate" th:text="${anime.title}">Title</h6>
+                                        </div>
+                                        <a th:href="@{/anime/{id}(id=${anime.id})}" class="stretched-link"></a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <!-- Seasons -->
+                        <div th:with="seasons=${anime.relatedAnime.?[relationType != null and relationType == T(com.animefan.model.Anime.RelatedAnime.RelationType).SEASON]}"
+                             th:if="${seasons != null and !seasons.isEmpty()}" class="mb-4">
+                            <h5 class="mb-3"><i class="bi bi-collection text-primary"></i> Сезоны этого аниме</h5>
+                            <div class="row g-3">
+                                <div class="col-auto">
+                                    <a th:href="@{/anime/{id}(id=${anime.id})}"
+                                       class="btn btn-primary btn-lg d-flex flex-column align-items-center p-3"
+                                       style="min-width: 100px;">
+                                        <i class="bi bi-eye-fill mb-1"></i>
+                                        <span class="small">Текущий</span>
+                                    </a>
+                                </div>
+                                <div class="col-auto" th:each="season : ${seasons}">
+                                    <a th:href="@{/anime/{id}(id=${season.animeId})}"
+                                       class="btn btn-outline-primary btn-lg d-flex flex-column align-items-center p-3"
+                                       style="min-width: 100px;">
+                                        <span th:if="${season.seasonNumber != null}" th:text="|Сезон ${season.seasonNumber}|">Сезон 2</span>
+                                        <span th:if="${season.seasonNumber == null}" class="small text-truncate"
+                                              style="max-width: 80px;" th:text="${season.title}">Title</span>
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Sequels & Prequels -->
+                        <div th:with="sequels=${anime.relatedAnime.?[relationType != null and (relationType == T(com.animefan.model.Anime.RelatedAnime.RelationType).SEQUEL or relationType == T(com.animefan.model.Anime.RelatedAnime.RelationType).PREQUEL)]}"
+                             th:if="${sequels != null and !sequels.isEmpty()}" class="mb-4">
+                            <h5 class="mb-3"><i class="bi bi-arrow-left-right text-success"></i> Продолжения и приквелы</h5>
+                            <div class="row row-cols-2 row-cols-md-4 row-cols-lg-6 g-3">
+                                <div th:each="related : ${sequels}" class="col">
+                                    <div class="card h-100 anime-card">
+                                        <div class="position-absolute top-0 start-0 m-2 z-1">
+                                            <span class="badge"
+                                                  th:classappend="${related.relationType == T(com.animefan.model.Anime.RelatedAnime.RelationType).SEQUEL ? 'bg-success' : 'bg-info'}"
+                                                  th:text="${related.relationType.displayName}">Type</span>
+                                        </div>
+                                        <img th:src="${related.posterUrl != null ? related.posterUrl : 'https://via.placeholder.com/150x220?text=No'}"
+                                             class="card-img-top" style="height: 180px; object-fit: cover;">
+                                        <div class="card-body p-2">
+                                            <h6 class="card-title small mb-0 text-truncate" th:text="${related.title}">Title</h6>
+                                        </div>
+                                        <a th:href="@{/anime/{id}(id=${related.animeId})}" class="stretched-link"></a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Movies, OVAs, Specials -->
+                        <div th:with="extras=${anime.relatedAnime.?[relationType != null and (relationType == T(com.animefan.model.Anime.RelatedAnime.RelationType).MOVIE or relationType == T(com.animefan.model.Anime.RelatedAnime.RelationType).OVA or relationType == T(com.animefan.model.Anime.RelatedAnime.RelationType).SPECIAL)]}"
+                             th:if="${extras != null and !extras.isEmpty()}" class="mb-4">
+                            <h5 class="mb-3"><i class="bi bi-film text-danger"></i> Фильмы, OVA и спецвыпуски</h5>
+                            <div class="row row-cols-2 row-cols-md-4 row-cols-lg-6 g-3">
+                                <div th:each="related : ${extras}" class="col">
+                                    <div class="card h-100 anime-card">
+                                        <div class="position-absolute top-0 start-0 m-2 z-1">
+                                            <span class="badge bg-danger" th:text="${related.relationType.displayName}">Type</span>
+                                        </div>
+                                        <img th:src="${related.posterUrl != null ? related.posterUrl : 'https://via.placeholder.com/150x220?text=No'}"
+                                             class="card-img-top" style="height: 180px; object-fit: cover;">
+                                        <div class="card-body p-2">
+                                            <h6 class="card-title small mb-0 text-truncate" th:text="${related.title}">Title</h6>
+                                        </div>
+                                        <a th:href="@{/anime/{id}(id=${related.animeId})}" class="stretched-link"></a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Other relations -->
+                        <div th:with="others=${anime.relatedAnime.?[(relationType == null) or relationType == T(com.animefan.model.Anime.RelatedAnime.RelationType).SIDE_STORY or relationType == T(com.animefan.model.Anime.RelatedAnime.RelationType).SPIN_OFF or relationType == T(com.animefan.model.Anime.RelatedAnime.RelationType).ALTERNATIVE or relationType == T(com.animefan.model.Anime.RelatedAnime.RelationType).OTHER]}"
+                             th:if="${others != null and !others.isEmpty()}">
+                            <h5 class="mb-3"><i class="bi bi-diagram-3 text-secondary"></i> Другие связанные</h5>
+                            <div class="row row-cols-2 row-cols-md-4 row-cols-lg-6 g-3">
+                                <div th:each="related : ${others}" class="col">
+                                    <div class="card h-100 anime-card">
+                                        <div class="position-absolute top-0 start-0 m-2 z-1">
+                                            <span class="badge"
+                                                  th:classappend="${related.relationType != null ? 'bg-secondary' : 'bg-secondary'}"
+                                                  th:text="${related.relationType != null ? related.relationType.displayName : 'Связанное'}">Type</span>
+                                        </div>
+                                        <img th:src="${related.posterUrl != null ? related.posterUrl : 'https://via.placeholder.com/150x220?text=No'}"
+                                             class="card-img-top" style="height: 180px; object-fit: cover;">
+                                        <div class="card-body p-2">
+                                            <h6 class="card-title small mb-0 text-truncate" th:text="${related.title}">Title</h6>
+                                        </div>
+                                        <a th:href="@{/anime/{id}(id=${related.animeId})}" class="stretched-link"></a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Reviews Tab -->
+            <div class="tab-pane fade" id="reviews">
+                <!-- Write Review Form -->
+                <div class="card mb-4" sec:authorize="isAuthenticated()" th:if="${!hasReviewed}">
+                    <div class="card-header">
+                        <h5 class="mb-0"><i class="bi bi-pencil text-accent"></i> Написать отзыв</h5>
+                    </div>
+                    <div class="card-body">
+                        <form id="reviewForm" th:data-anime-id="${anime.id}">
+                            <!-- Rating Selector -->
+                            <div class="mb-4">
+                                <label class="form-label fw-bold">Ваша оценка</label>
+                                <div class="rating-selector">
+                                    <div class="d-flex align-items-center gap-3 mb-2">
+                                        <input type="range" class="form-range flex-grow-1" min="1" max="10" name="rating" id="ratingInput" value="7">
+                                        <div class="rating-display">
+                                            <span id="ratingValue" class="rating-number">7</span>
+                                        </div>
+                                    </div>
+                                    <div class="rating-label-container text-center">
+                                        <span id="ratingLabel" class="rating-label">😊 Хорошо</span>
+                                    </div>
+                                    <div class="rating-scale d-flex justify-content-between mt-2">
+                                        <small class="text-muted">💀 1</small>
+                                        <small class="text-muted">5</small>
+                                        <small class="text-muted">🏆 10</small>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="mb-3">
+                                <label class="form-label">Заголовок <small class="text-muted">(необязательно)</small></label>
+                                <input type="text" class="form-control" name="title" placeholder="Краткое резюме вашего отзыва">
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Ваш отзыв</label>
+                                <textarea class="form-control" name="text" rows="5" required
+                                          placeholder="Поделитесь впечатлениями об этом аниме... (минимум 10 символов)"></textarea>
+                            </div>
+                            <div class="form-check mb-3">
+                                <input type="checkbox" class="form-check-input" name="spoiler" id="spoilerCheck">
+                                <label class="form-check-label spoiler-label" for="spoilerCheck">
+                                    <i class="bi bi-exclamation-triangle text-warning"></i>
+                                    <span>Содержит спойлеры</span>
+                                </label>
+                            </div>
+                            <button type="submit" class="btn btn-primary btn-lg">
+                                <i class="bi bi-send"></i> Отправить отзыв
+                            </button>
+                        </form>
+                    </div>
+                </div>
+
+                <!-- User's existing review -->
+                <div class="card mb-4 border-primary" th:if="${userReview != null}">
+                    <div class="card-header bg-primary text-white">
+                        <i class="bi bi-person-check"></i> Ваш отзыв
+                    </div>
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between">
+                            <div class="badge bg-success fs-6 mb-2">
+                                <i class="bi bi-star-fill"></i> <span th:text="${userReview.rating}">10</span>/10
+                            </div>
+                        </div>
+                        <h6 th:if="${userReview.title != null}" th:text="${userReview.title}">Review Title</h6>
+                        <p th:text="${userReview.text}" style="white-space: pre-line;">Review text</p>
+                    </div>
+                </div>
+
+                <!-- Reviews List -->
+                <div th:each="review : ${reviews.content}" class="card mb-3 review-card">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-start mb-2">
+                            <div>
+                                <strong th:text="${review.username}">Username</strong>
+                                <small class="text-muted" th:text="${#temporals.format(review.createdAt, 'dd.MM.yyyy')}">Date</small>
+                                <span class="badge bg-warning text-dark" th:if="${review.spoiler}">
+                                    <i class="bi bi-exclamation-triangle"></i> Спойлер
+                                </span>
+                            </div>
+                            <span class="badge bg-success fs-6">
+                                <i class="bi bi-star-fill"></i> <span th:text="${review.rating}">10</span>
+                            </span>
+                        </div>
+
+                        <!-- Spoiler Warning -->
+                        <div th:if="${review.spoiler}" class="spoiler-warning" th:id="|spoiler-warning-${review.id}|">
+                            <div class="alert alert-warning d-flex align-items-center justify-content-between mb-0">
+                                <div>
+                                    <i class="bi bi-eye-slash me-2"></i>
+                                    <strong>Этот отзыв содержит спойлеры!</strong>
+                                    <p class="mb-0 small">Нажмите кнопку, чтобы показать содержимое отзыва.</p>
+                                </div>
+                                <button class="btn btn-warning btn-sm show-spoiler-btn"
+                                        th:data-review-id="${review.id}"
+                                        onclick="showSpoiler(this)">
+                                    <i class="bi bi-eye"></i> Показать
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Review Content (hidden if spoiler) -->
+                        <div class="review-content"
+                             th:id="|review-content-${review.id}|"
+                             th:style="${review.spoiler} ? 'display: none;' : ''">
+                            <h6 th:if="${review.title != null}" th:text="${review.title}">Review Title</h6>
+                            <p th:text="${review.text}" class="mb-2" style="white-space: pre-line;">Review text</p>
+                            <div class="d-flex gap-2">
+                                <button class="btn btn-sm btn-outline-success review-helpful" th:data-review-id="${review.id}">
+                                    <i class="bi bi-hand-thumbs-up"></i> <span th:text="${review.helpfulCount}">0</span>
+                                </button>
+                                <button class="btn btn-sm btn-outline-danger review-unhelpful" th:data-review-id="${review.id}">
+                                    <i class="bi bi-hand-thumbs-down"></i> <span th:text="${review.unhelpfulCount}">0</span>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <script>
+                function showSpoiler(btn) {
+                    const reviewId = btn.getAttribute('data-review-id');
+                    if (confirm('Вы уверены, что хотите увидеть спойлер?')) {
+                        document.getElementById('spoiler-warning-' + reviewId).style.display = 'none';
+                        document.getElementById('review-content-' + reviewId).style.display = 'block';
+                    }
+                }
+                </script>
+
+                <p class="text-muted text-center py-4" th:if="${reviews.content.isEmpty()}">
+                    Пока нет отзывов. Будьте первым!
+                </p>
+
+                <!-- Reviews Pagination -->
+                <nav th:if="${reviews.totalPages > 1}">
+                    <ul class="pagination justify-content-center">
+                        <li th:each="i : ${#numbers.sequence(0, reviews.totalPages - 1)}"
+                            class="page-item" th:classappend="${i == reviews.number} ? 'active'">
+                            <a class="page-link" th:href="@{/anime/{id}(id=${anime.id}, reviewPage=${i})}" th:text="${i + 1}">1</a>
+                        </li>
+                    </ul>
+                </nav>
+            </div>
+        </div>
+
+        <!-- Related Releases / Seasons -->
+        <div class="mt-5" th:if="${anime.relatedAnime != null and !anime.relatedAnime.isEmpty()}">
+            <h4 class="mb-4"><i class="bi bi-diagram-3 text-accent"></i> Связанные релизы</h4>
+
+            <!-- Seasons (if any) -->
+            <div th:with="seasons=${anime.relatedAnime.?[relationType != null and relationType == T(com.animefan.model.Anime.RelatedAnime.RelationType).SEASON]}"
+                 th:if="${seasons != null and !seasons.isEmpty()}" class="mb-4">
+                <h5 class="text-muted mb-3"><i class="bi bi-collection"></i> Сезоны</h5>
+                <div class="d-flex flex-wrap gap-2">
+                    <!-- Current anime as season -->
+                    <a th:href="@{/anime/{id}(id=${anime.id})}"
+                       class="btn btn-primary btn-lg position-relative">
+                        <i class="bi bi-play-circle-fill me-1"></i>
+                        Текущий
+                        <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-warning text-dark">
+                            <i class="bi bi-eye-fill"></i>
+                        </span>
+                    </a>
+                    <a th:each="season : ${seasons}"
+                       th:href="@{/anime/{id}(id=${season.animeId})}"
+                       class="btn btn-outline-primary btn-lg">
+                        <i class="bi bi-play-circle me-1"></i>
+                        <span th:if="${season.seasonNumber != null}" th:text="|Сезон ${season.seasonNumber}|">Сезон 2</span>
+                        <span th:if="${season.seasonNumber == null}" th:text="${season.title}">Название</span>
+                    </a>
+                </div>
+            </div>
+
+            <!-- Other Relations -->
+            <div th:with="others=${anime.relatedAnime.?[(relationType == null) or (relationType != null and relationType != T(com.animefan.model.Anime.RelatedAnime.RelationType).SEASON)]}"
+                 th:if="${others != null and !others.isEmpty()}">
+                <div class="row row-cols-2 row-cols-md-4 row-cols-lg-6 g-3">
+                    <!-- Current anime card -->
+                    <div class="col">
+                        <div class="card h-100 anime-card position-relative overflow-hidden">
+                            <div class="position-absolute top-0 start-0 m-2 z-1">
+                                <span class="badge bg-primary">Текущий</span>
+                            </div>
+                            <img th:src="${anime.posterUrl != null ? anime.posterUrl : 'https://via.placeholder.com/200x300?text=No+Image'}"
+                                 class="card-img-top" style="height: 200px; object-fit: cover;">
+                            <div class="card-body p-2">
+                                <h6 class="card-title small mb-0 text-truncate" th:text="${anime.title}">Title</h6>
+                            </div>
+                            <a th:href="@{/anime/{id}(id=${anime.id})}" class="stretched-link"></a>
+                        </div>
+                    </div>
+                    <div th:each="related : ${others}" class="col">
+                        <div class="card h-100 anime-card position-relative overflow-hidden">
+                            <div class="position-absolute top-0 start-0 m-2 z-1">
+                                <span class="badge"
+                                      th:classappend="${related.relationType == null ? 'bg-secondary' : (related.relationType == T(com.animefan.model.Anime.RelatedAnime.RelationType).SEQUEL ? 'bg-success' : (related.relationType == T(com.animefan.model.Anime.RelatedAnime.RelationType).PREQUEL ? 'bg-info' : (related.relationType == T(com.animefan.model.Anime.RelatedAnime.RelationType).MOVIE ? 'bg-danger' : 'bg-secondary')))}"
+                                      th:text="${related.relationType != null ? related.relationType.displayName : 'Связанное'}">Type</span>
+                            </div>
+                            <img th:src="${related.posterUrl != null ? related.posterUrl : 'https://via.placeholder.com/200x300?text=No+Image'}"
+                                 class="card-img-top" style="height: 200px; object-fit: cover;">
+                            <div class="card-body p-2">
+                                <h6 class="card-title small mb-0 text-truncate" th:text="${related.title}">Title</h6>
+                            </div>
+                            <a th:href="@{/anime/{id}(id=${related.animeId})}" class="stretched-link"></a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Similar Anime (genre based) -->
+        <div class="mt-5" th:if="${relatedAnime != null and !relatedAnime.isEmpty()}">
+            <h4><i class="bi bi-collection"></i> Похожие аниме</h4>
+            <div class="row row-cols-2 row-cols-md-5 g-3">
+                <div class="col" th:each="related : ${relatedAnime}">
+                    <div class="card h-100 anime-card">
+                        <img th:src="${related.posterUrl != null ? related.posterUrl : 'https://via.placeholder.com/300x450?text=No+Image'}"
+                             class="card-img-top" style="height: 200px; object-fit: cover;">
+                        <div class="card-body p-2">
+                            <h6 class="card-title small text-truncate" th:text="${related.title}">Title</h6>
+                        </div>
+                        <a th:href="@{/anime/{id}(id=${related.id})}" class="stretched-link"></a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</main>
+</body>
+</html>

@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="ru" xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layout/base :: html(content=~{::main})}">
+<head>
+    <title>Управление баннерами - AnimeFan Admin</title>
+</head>
+<body>
+<main>
+    <div class="container py-4">
+        <nav aria-label="breadcrumb" class="mb-4">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a th:href="@{/admin}">Админ панель</a></li>
+                <li class="breadcrumb-item active">Баннеры</li>
+            </ol>
+        </nav>
+
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h1><i class="bi bi-images"></i> Управление баннерами</h1>
+            <a th:href="@{/admin/banners/new}" class="btn btn-success">
+                <i class="bi bi-plus-circle"></i> Добавить баннер
+            </a>
+        </div>
+
+        <div class="card">
+            <div class="card-body p-0">
+                <div th:if="${banners == null or banners.isEmpty()}" class="text-center py-5 text-muted">
+                    <i class="bi bi-images display-4"></i>
+                    <p class="mt-2">Баннеры не добавлены</p>
+                    <a th:href="@{/admin/banners/new}" class="btn btn-primary">Добавить первый баннер</a>
+                </div>
+
+                <div class="table-responsive" th:if="${banners != null and !banners.isEmpty()}">
+                    <table class="table table-hover mb-0">
+                        <thead class="table-dark">
+                            <tr>
+                                <th width="100">Порядок</th>
+                                <th width="150">Превью</th>
+                                <th>Заголовок</th>
+                                <th>Кнопка</th>
+                                <th width="100">Статус</th>
+                                <th width="180">Действия</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr th:each="banner : ${banners}">
+                                <td>
+                                    <span class="badge bg-secondary fs-6" th:text="${banner.order}">1</span>
+                                </td>
+                                <td>
+                                    <img th:src="${banner.imageUrl}"
+                                         style="width: 120px; height: 60px; object-fit: cover;"
+                                         class="rounded">
+                                </td>
+                                <td>
+                                    <strong th:text="${banner.title}">Заголовок</strong>
+                                    <br>
+                                    <small class="text-muted" th:text="${#strings.abbreviate(banner.description, 50)}">Описание</small>
+                                </td>
+                                <td>
+                                    <span th:if="${banner.buttonText != null}" class="badge bg-primary"
+                                          th:text="${banner.buttonText}">Кнопка</span>
+                                    <span th:if="${banner.buttonText == null}" class="text-muted">—</span>
+                                </td>
+                                <td>
+                                    <span th:if="${banner.active}" class="badge bg-success">Активен</span>
+                                    <span th:if="${!banner.active}" class="badge bg-secondary">Скрыт</span>
+                                </td>
+                                <td>
+                                    <a th:href="@{/admin/banners/{id}/edit(id=${banner.id})}"
+                                       class="btn btn-sm btn-outline-primary" title="Редактировать">
+                                        <i class="bi bi-pencil"></i>
+                                    </a>
+                                    <form th:action="@{/admin/banners/{id}/toggle(id=${banner.id})}" method="post" class="d-inline">
+                                        <input type="hidden" name="active" th:value="${!banner.active}">
+                                        <button type="submit" class="btn btn-sm"
+                                                th:classappend="${banner.active} ? 'btn-outline-warning' : 'btn-outline-success'"
+                                                th:title="${banner.active} ? 'Скрыть' : 'Показать'">
+                                            <i class="bi" th:classappend="${banner.active} ? 'bi-eye-slash' : 'bi-eye'"></i>
+                                        </button>
+                                    </form>
+                                    <form th:action="@{/admin/banners/{id}/delete(id=${banner.id})}" method="post" class="d-inline"
+                                          onsubmit="return confirm('Удалить баннер?')">
+                                        <button type="submit" class="btn btn-sm btn-outline-danger" title="Удалить">
+                                            <i class="bi bi-trash"></i>
+                                        </button>
+                                    </form>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</main>
+</body>
+</html>

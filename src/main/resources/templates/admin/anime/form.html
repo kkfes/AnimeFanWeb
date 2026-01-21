@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html lang="ru" xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layout/base :: html(content=~{::main})}">
+<head>
+    <title th:text="${isEdit} ? 'Редактировать аниме' : 'Добавить аниме'">Anime Form - AnimeFan</title>
+</head>
+<body>
+<main>
+    <div class="container py-4">
+        <h1 class="mb-4">
+            <i class="bi" th:classappend="${isEdit} ? 'bi-pencil' : 'bi-plus-circle'"></i>
+            <span th:text="${isEdit} ? 'Редактировать аниме' : 'Добавить аниме'">Anime Form</span>
+        </h1>
+
+        <div class="card">
+            <div class="card-body">
+                <form th:action="${isEdit} ? @{/admin/anime/{id}/edit(id=${anime.id})} : @{/admin/anime/new}"
+                      th:object="${animeDTO}" method="post">
+
+                    <div class="row">
+                        <div class="col-md-8">
+                            <div class="mb-3">
+                                <label class="form-label">Название *</label>
+                                <input type="text" class="form-control" th:field="*{title}"
+                                       th:classappend="${#fields.hasErrors('title')} ? 'is-invalid'" required>
+                                <div class="invalid-feedback" th:if="${#fields.hasErrors('title')}" th:errors="*{title}">Error</div>
+                            </div>
+
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label class="form-label">Английское название</label>
+                                    <input type="text" class="form-control" th:field="*{titleEnglish}">
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <label class="form-label">Японское название</label>
+                                    <input type="text" class="form-control" th:field="*{titleJapanese}">
+                                </div>
+                            </div>
+
+                            <div class="mb-3">
+                                <label class="form-label">Описание *</label>
+                                <textarea class="form-control" th:field="*{description}" rows="5"
+                                          th:classappend="${#fields.hasErrors('description')} ? 'is-invalid'" required></textarea>
+                                <div class="invalid-feedback" th:if="${#fields.hasErrors('description')}" th:errors="*{description}">Error</div>
+                            </div>
+
+                            <div class="mb-3">
+                                <label class="form-label">Жанры *</label>
+                                <div class="chip-picker" id="genrePicker">
+                                    <label class="chip-picker-item" th:classappend="${animeDTO.genres != null and animeDTO.genres.contains('Action')} ? 'selected'">
+                                        <input type="checkbox" name="genres" value="Action" th:checked="${animeDTO.genres != null and animeDTO.genres.contains('Action')}" onchange="this.parentElement.classList.toggle('selected', this.checked)">
+                                        <span>Экшен</span>
+                                    </label>
+                                    <label class="chip-picker-item" th:classappend="${animeDTO.genres != null and animeDTO.genres.contains('Adventure')} ? 'selected'">
+                                        <input type="checkbox" name="genres" value="Adventure" th:checked="${animeDTO.genres != null and animeDTO.genres.contains('Adventure')}" onchange="this.parentElement.classList.toggle('selected', this.checked)">
+                                        <span>Приключения</span>
+                                    </label>
+                                    <label class="chip-picker-item" th:classappend="${animeDTO.genres != null and animeDTO.genres.contains('Comedy')} ? 'selected'">
+                                        <input type="checkbox" name="genres" value="Comedy" th:checked="${animeDTO.genres != null and animeDTO.genres.contains('Comedy')}" onchange="this.parentElement.classList.toggle('selected', this.checked)">
+                                        <span>Комедия</span>
+                                    </label>
+                                    <label class="chip-picker-item" th:classappend="${animeDTO.genres != null and animeDTO.genres.contains('Drama')} ? 'selected'">
+                                        <input type="checkbox" name="genres" value="Drama" th:checked="${animeDTO.genres != null and animeDTO.genres.contains('Drama')}" onchange="this.parentElement.classList.toggle('selected', this.checked)">
+                                        <span>Драма</span>
+                                    </label>
+                                    <label class="chip-picker-item" th:classappend="${animeDTO.genres != null and animeDTO.genres.contains('Fantasy')} ? 'selected'">
+                                        <input type="checkbox" name="genres" value="Fantasy" th:checked="${animeDTO.genres != null and animeDTO.genres.contains('Fantasy')}" onchange="this.parentElement.classList.toggle('selected', this.checked)">
+                                        <span>Фэнтези</span>
+                                    </label>
+                                    <label class="chip-picker-item" th:classappend="${animeDTO.genres != null and animeDTO.genres.contains('Horror')} ? 'selected'">
+                                        <input type="checkbox" name="genres" value="Horror" th:checked="${animeDTO.genres != null and animeDTO.genres.contains('Horror')}" onchange="this.parentElement.classList.toggle('selected', this.checked)">
+                                        <span>Ужасы</span>
+                                    </label>
+                                    <label class="chip-picker-item" th:classappend="${animeDTO.genres != null and animeDTO.genres.contains('Mystery')} ? 'selected'">
+                                        <input type="checkbox" name="genres" value="Mystery" th:checked="${animeDTO.genres != null and animeDTO.genres.contains('Mystery')}" onchange="this.parentElement.classList.toggle('selected', this.checked)">
+                                        <span>Мистика</span>
+                                    </label>
+                                    <label class="chip-picker-item" th:classappend="${animeDTO.genres != null and animeDTO.genres.contains('Romance')} ? 'selected'">
+                                        <input type="checkbox" name="genres" value="Romance" th:checked="${animeDTO.genres != null and animeDTO.genres.contains('Romance')}" onchange="this.parentElement.classList.toggle('selected', this.checked)">
+                                        <span>Романтика</span>
+                                    </label>
+                                    <label class="chip-picker-item" th:classappend="${animeDTO.genres != null and animeDTO.genres.contains('Sci-Fi')} ? 'selected'">
+                                        <input type="checkbox" name="genres" value="Sci-Fi" th:checked="${animeDTO.genres != null and animeDTO.genres.contains('Sci-Fi')}" onchange="this.parentElement.classList.toggle('selected', this.checked)">
+                                        <span>Научная фантастика</span>
+                                    </label>
+                                    <label class="chip-picker-item" th:classappend="${animeDTO.genres != null and animeDTO.genres.contains('Slice of Life')} ? 'selected'">
+                                        <input type="checkbox" name="genres" value="Slice of Life" th:checked="${animeDTO.genres != null and animeDTO.genres.contains('Slice of Life')}" onchange="this.parentElement.classList.toggle('selected', this.checked)">
+                                        <span>Повседневность</span>
+                                    </label>
+                                    <label class="chip-picker-item" th:classappend="${animeDTO.genres != null and animeDTO.genres.contains('Sports')} ? 'selected'">
+                                        <input type="checkbox" name="genres" value="Sports" th:checked="${animeDTO.genres != null and animeDTO.genres.contains('Sports')}" onchange="this.parentElement.classList.toggle('selected', this.checked)">
+                                        <span>Спорт</span>
+                                    </label>
+                                    <label class="chip-picker-item" th:classappend="${animeDTO.genres != null and animeDTO.genres.contains('Supernatural')} ? 'selected'">
+                                        <input type="checkbox" name="genres" value="Supernatural" th:checked="${animeDTO.genres != null and animeDTO.genres.contains('Supernatural')}" onchange="this.parentElement.classList.toggle('selected', this.checked)">
+                                        <span>Сверхъестественное</span>
+                                    </label>
+                                    <label class="chip-picker-item" th:classappend="${animeDTO.genres != null and animeDTO.genres.contains('Thriller')} ? 'selected'">
+                                        <input type="checkbox" name="genres" value="Thriller" th:checked="${animeDTO.genres != null and animeDTO.genres.contains('Thriller')}" onchange="this.parentElement.classList.toggle('selected', this.checked)">
+                                        <span>Триллер</span>
+                                    </label>
+                                    <label class="chip-picker-item" th:classappend="${animeDTO.genres != null and animeDTO.genres.contains('Shounen')} ? 'selected'">
+                                        <input type="checkbox" name="genres" value="Shounen" th:checked="${animeDTO.genres != null and animeDTO.genres.contains('Shounen')}" onchange="this.parentElement.classList.toggle('selected', this.checked)">
+                                        <span>Сёнен</span>
+                                    </label>
+                                    <label class="chip-picker-item" th:classappend="${animeDTO.genres != null and animeDTO.genres.contains('Seinen')} ? 'selected'">
+                                        <input type="checkbox" name="genres" value="Seinen" th:checked="${animeDTO.genres != null and animeDTO.genres.contains('Seinen')}" onchange="this.parentElement.classList.toggle('selected', this.checked)">
+                                        <span>Сэйнен</span>
+                                    </label>
+                                    <label class="chip-picker-item" th:classappend="${animeDTO.genres != null and animeDTO.genres.contains('Shoujo')} ? 'selected'">
+                                        <input type="checkbox" name="genres" value="Shoujo" th:checked="${animeDTO.genres != null and animeDTO.genres.contains('Shoujo')}" onchange="this.parentElement.classList.toggle('selected', this.checked)">
+                                        <span>Сёдзё</span>
+                                    </label>
+                                    <label class="chip-picker-item" th:classappend="${animeDTO.genres != null and animeDTO.genres.contains('Mecha')} ? 'selected'">
+                                        <input type="checkbox" name="genres" value="Mecha" th:checked="${animeDTO.genres != null and animeDTO.genres.contains('Mecha')}" onchange="this.parentElement.classList.toggle('selected', this.checked)">
+                                        <span>Меха</span>
+                                    </label>
+                                    <label class="chip-picker-item" th:classappend="${animeDTO.genres != null and animeDTO.genres.contains('Isekai')} ? 'selected'">
+                                        <input type="checkbox" name="genres" value="Isekai" th:checked="${animeDTO.genres != null and animeDTO.genres.contains('Isekai')}" onchange="this.parentElement.classList.toggle('selected', this.checked)">
+                                        <span>Исекай</span>
+                                    </label>
+                                </div>
+                                <small class="text-muted">Выберите один или несколько жанров</small>
+                            </div>
+                        </div>
+
+                        <div class="col-md-4">
+                            <div class="mb-3">
+                                <label class="form-label">URL постера</label>
+                                <input type="url" class="form-control" th:field="*{posterUrl}" placeholder="https://...">
+                            </div>
+
+                            <div class="mb-3">
+                                <label class="form-label">URL баннера</label>
+                                <input type="url" class="form-control" th:field="*{bannerUrl}" placeholder="https://...">
+                            </div>
+
+                            <div class="mb-3">
+                                <label class="form-label">URL трейлера</label>
+                                <input type="url" class="form-control" th:field="*{trailerUrl}" placeholder="https://youtube.com/...">
+                            </div>
+
+                            <div class="row">
+                                <div class="col-6 mb-3">
+                                    <label class="form-label">Год выхода</label>
+                                    <input type="number" class="form-control" th:field="*{releaseYear}" min="1960" max="2030">
+                                </div>
+                                <div class="col-6 mb-3">
+                                    <label class="form-label">Эпизодов</label>
+                                    <input type="number" class="form-control" th:field="*{episodeCount}" min="0">
+                                </div>
+                            </div>
+
+                            <div class="mb-3">
+                                <label class="form-label"><i class="bi bi-film text-accent"></i> Тип</label>
+                                <div class="pill-picker">
+                                    <label class="pill-picker-item" th:classappend="${animeDTO.type == 'TV'} ? 'active'">
+                                        <input type="radio" name="type" value="TV" th:checked="${animeDTO.type == 'TV'}" onchange="updatePillPicker(this)">
+                                        <i class="bi bi-tv"></i> TV
+                                    </label>
+                                    <label class="pill-picker-item" th:classappend="${animeDTO.type == 'MOVIE'} ? 'active'">
+                                        <input type="radio" name="type" value="MOVIE" th:checked="${animeDTO.type == 'MOVIE'}" onchange="updatePillPicker(this)">
+                                        <i class="bi bi-camera-reels"></i> Фильм
+                                    </label>
+                                    <label class="pill-picker-item" th:classappend="${animeDTO.type == 'OVA'} ? 'active'">
+                                        <input type="radio" name="type" value="OVA" th:checked="${animeDTO.type == 'OVA'}" onchange="updatePillPicker(this)">
+                                        OVA
+                                    </label>
+                                    <label class="pill-picker-item" th:classappend="${animeDTO.type == 'ONA'} ? 'active'">
+                                        <input type="radio" name="type" value="ONA" th:checked="${animeDTO.type == 'ONA'}" onchange="updatePillPicker(this)">
+                                        ONA
+                                    </label>
+                                    <label class="pill-picker-item" th:classappend="${animeDTO.type == 'SPECIAL'} ? 'active'">
+                                        <input type="radio" name="type" value="SPECIAL" th:checked="${animeDTO.type == 'SPECIAL'}" onchange="updatePillPicker(this)">
+                                        Спешл
+                                    </label>
+                                </div>
+                            </div>
+
+                            <div class="mb-3">
+                                <label class="form-label"><i class="bi bi-broadcast text-accent"></i> Статус</label>
+                                <div class="pill-picker">
+                                    <label class="pill-picker-item" th:classappend="${animeDTO.status == 'ONGOING'} ? 'active'">
+                                        <input type="radio" name="status" value="ONGOING" th:checked="${animeDTO.status == 'ONGOING'}" onchange="updatePillPicker(this)">
+                                        <i class="bi bi-circle-fill text-success" style="font-size: 0.5rem;"></i> Онгоинг
+                                    </label>
+                                    <label class="pill-picker-item" th:classappend="${animeDTO.status == 'COMPLETED'} ? 'active'">
+                                        <input type="radio" name="status" value="COMPLETED" th:checked="${animeDTO.status == 'COMPLETED'}" onchange="updatePillPicker(this)">
+                                        <i class="bi bi-check-circle-fill text-primary" style="font-size: 0.6rem;"></i> Завершено
+                                    </label>
+                                    <label class="pill-picker-item" th:classappend="${animeDTO.status == 'UPCOMING'} ? 'active'">
+                                        <input type="radio" name="status" value="UPCOMING" th:checked="${animeDTO.status == 'UPCOMING'}" onchange="updatePillPicker(this)">
+                                        <i class="bi bi-clock text-warning" style="font-size: 0.6rem;"></i> Анонс
+                                    </label>
+                                </div>
+                            </div>
+
+                            <script>
+                            function updatePillPicker(radio) {
+                                const picker = radio.closest('.pill-picker');
+                                picker.querySelectorAll('.pill-picker-item').forEach(item => {
+                                    item.classList.remove('active');
+                                });
+                                radio.parentElement.classList.add('active');
+                            }
+                            </script>
+
+                            <div class="mb-3">
+                                <label class="form-label">Студия</label>
+                                <select class="form-select" th:field="*{studioId}">
+                                    <option value="">Выберите студию</option>
+                                    <option th:each="studio : ${studios}"
+                                            th:value="${studio.id}"
+                                            th:text="${studio.name}">Studio</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <hr>
+
+                    <div class="d-flex justify-content-between">
+                        <div class="d-flex gap-2">
+                            <button type="submit" class="btn btn-success">
+                                <i class="bi bi-check-circle"></i>
+                                <span th:text="${isEdit} ? 'Сохранить' : 'Создать'">Save</span>
+                            </button>
+                            <a th:href="@{/admin/anime}" class="btn btn-secondary">
+                                <i class="bi bi-x-circle"></i> Отмена
+                            </a>
+                        </div>
+                        <div th:if="${isEdit}">
+                            <a th:href="@{/admin/anime/{id}/episodes(id=${anime.id})}" class="btn btn-info">
+                                <i class="bi bi-film"></i> Управление эпизодами
+                            </a>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</main>
+</body>
+</html>

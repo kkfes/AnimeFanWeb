@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="ru" xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layout/base :: html(content=~{::main})}">
+<head>
+    <title>Управление аниме - AnimeFan</title>
+</head>
+<body>
+<main>
+    <div class="container py-4">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h1><i class="bi bi-collection-play"></i> Управление аниме</h1>
+            <div class="btn-group">
+                <a th:href="@{/admin/anime/bulk-import}" class="btn btn-outline-primary">
+                    <i class="bi bi-cloud-upload"></i> Массовый импорт
+                </a>
+                <a th:href="@{/admin/anime/new}" class="btn btn-success">
+                    <i class="bi bi-plus-circle"></i> Добавить аниме
+                </a>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>Постер</th>
+                                <th>Название</th>
+                                <th>Год</th>
+                                <th>Тип</th>
+                                <th>Статус</th>
+                                <th>Рейтинг</th>
+                                <th>Эпизоды</th>
+                                <th>Связи</th>
+                                <th>Действия</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr th:each="anime : ${animeList.content}">
+                                <td>
+                                    <img th:src="${anime.posterUrl != null} ? ${anime.posterUrl} : 'https://via.placeholder.com/50x75?text=No'"
+                                         width="50" height="75" style="object-fit: cover;" class="rounded">
+                                </td>
+                                <td>
+                                    <a th:href="@{/anime/{id}(id=${anime.id})}" th:text="${anime.title}">Title</a>
+                                </td>
+                                <td th:text="${anime.releaseYear}">2024</td>
+                                <td th:text="${anime.type}">TV</td>
+                                <td>
+                                    <span class="badge"
+                                          th:classappend="${anime.status == 'ONGOING'} ? 'bg-success' : (${anime.status == 'COMPLETED'} ? 'bg-secondary' : 'bg-warning')"
+                                          th:text="${anime.status}">Status</span>
+                                </td>
+                                <td>
+                                    <i class="bi bi-star-fill text-warning"></i>
+                                    <span th:text="${#numbers.formatDecimal(anime.rating, 1, 1)}">0.0</span>
+                                </td>
+                                <td th:text="${anime.episodeCount} ?: '-'">12</td>
+                                <td>
+                                    <span th:if="${anime.relatedAnime != null and !anime.relatedAnime.isEmpty()}"
+                                          class="badge bg-info" th:text="${anime.relatedAnime.size()}">0</span>
+                                    <span th:if="${anime.relatedAnime == null or anime.relatedAnime.isEmpty()}"
+                                          class="text-muted">-</span>
+                                </td>
+                                <td>
+                                    <div class="btn-group btn-group-sm">
+                                        <a th:href="@{/admin/anime/{id}/edit(id=${anime.id})}"
+                                           class="btn btn-outline-primary" title="Редактировать">
+                                            <i class="bi bi-pencil"></i>
+                                        </a>
+                                        <a th:href="@{/admin/anime/{id}/episodes(id=${anime.id})}"
+                                           class="btn btn-outline-info" title="Эпизоды">
+                                            <i class="bi bi-film"></i>
+                                        </a>
+                                        <a th:href="@{/admin/anime/{id}/related(id=${anime.id})}"
+                                           class="btn btn-outline-warning" title="Связанные релизы">
+                                            <i class="bi bi-link-45deg"></i>
+                                        </a>
+                                        <form th:action="@{/admin/anime/{id}/delete(id=${anime.id})}" method="post"
+                                              onsubmit="return confirm('Вы уверены?')" class="d-inline">
+                                            <button type="submit" class="btn btn-outline-danger" title="Удалить">
+                                                <i class="bi bi-trash"></i>
+                                            </button>
+                                        </form>
+                                    </div>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- Pagination -->
+                <nav th:if="${animeList.totalPages > 1}">
+                    <ul class="pagination justify-content-center">
+                        <li th:each="i : ${#numbers.sequence(0, animeList.totalPages - 1)}"
+                            class="page-item" th:classappend="${i == animeList.number} ? 'active'">
+                            <a class="page-link" th:href="@{/admin/anime(page=${i})}" th:text="${i + 1}">1</a>
+                        </li>
+                    </ul>
+                </nav>
+            </div>
+        </div>
+    </div>
+</main>
+</body>
+</html>

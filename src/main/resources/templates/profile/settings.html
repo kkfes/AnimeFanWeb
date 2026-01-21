@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="ru" xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layout/base :: html(content=~{::main})}">
+<head>
+    <title>Настройки - AnimeFan</title>
+</head>
+<body>
+<main>
+    <div class="container py-5">
+        <div class="row justify-content-center">
+            <div class="col-lg-8">
+                <div class="mb-4">
+                    <h2><i class="bi bi-gear text-accent"></i> Настройки аккаунта</h2>
+                    <p class="text-muted">Управление вашим аккаунтом и настройками безопасности</p>
+                </div>
+
+                <!-- Profile Settings -->
+                <div class="card mb-4">
+                    <div class="card-header">
+                        <h5 class="mb-0"><i class="bi bi-person text-accent"></i> Профиль</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="d-flex align-items-center gap-3 mb-3">
+                            <img th:src="${user.avatarUrl != null} ? ${user.avatarUrl} : 'https://via.placeholder.com/80x80?text=User'"
+                                 class="rounded-circle" width="80" height="80" style="object-fit: cover;">
+                            <div>
+                                <h5 class="mb-0" th:text="${user.displayName ?: user.username}">Username</h5>
+                                <small class="text-muted" th:text="'@' + ${user.username}">@user</small>
+                            </div>
+                        </div>
+                        <a th:href="@{/profile/edit}" class="btn btn-outline-primary">
+                            <i class="bi bi-pencil"></i> Редактировать профиль
+                        </a>
+                    </div>
+                </div>
+
+                <!-- Email Settings -->
+                <div class="card mb-4">
+                    <div class="card-header">
+                        <h5 class="mb-0"><i class="bi bi-envelope text-accent"></i> Email</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <p class="mb-1"><strong>Email:</strong> <span th:text="${user.email}">email@example.com</span></p>
+                                <small class="text-muted">
+                                    <span th:if="${user.emailVerified}" class="text-success">
+                                        <i class="bi bi-check-circle"></i> Подтверждён
+                                    </span>
+                                    <span th:unless="${user.emailVerified}" class="text-warning">
+                                        <i class="bi bi-exclamation-circle"></i> Не подтверждён
+                                    </span>
+                                </small>
+                            </div>
+                            <a th:href="@{/profile/edit}" class="btn btn-outline-primary btn-sm">Изменить</a>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Password Settings -->
+                <div class="card mb-4">
+                    <div class="card-header">
+                        <h5 class="mb-0"><i class="bi bi-shield-lock text-accent"></i> Безопасность</h5>
+                    </div>
+                    <div class="card-body">
+                        <h6>Изменить пароль</h6>
+                        <p class="text-muted small mb-3">Рекомендуется использовать надёжный пароль, который вы не используете на других сайтах.</p>
+                        <form th:action="@{/profile/password}" method="post">
+                            <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+                            <div class="mb-3">
+                                <label class="form-label">Текущий пароль</label>
+                                <input type="password" class="form-control" name="currentPassword" required>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Новый пароль</label>
+                                <input type="password" class="form-control" name="newPassword" required minlength="6">
+                                <small class="text-muted">Минимум 6 символов</small>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Подтвердите новый пароль</label>
+                                <input type="password" class="form-control" name="confirmPassword" required>
+                            </div>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="bi bi-check"></i> Изменить пароль
+                            </button>
+                        </form>
+                    </div>
+                </div>
+
+                <!-- Notification Settings -->
+                <div class="card mb-4">
+                    <div class="card-header">
+                        <h5 class="mb-0"><i class="bi bi-bell text-accent"></i> Уведомления</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="form-check form-switch mb-3">
+                            <input class="form-check-input" type="checkbox" id="emailNotifications" checked>
+                            <label class="form-check-label" for="emailNotifications">
+                                Email-уведомления о новых эпизодах
+                            </label>
+                        </div>
+                        <div class="form-check form-switch mb-3">
+                            <input class="form-check-input" type="checkbox" id="reviewNotifications" checked>
+                            <label class="form-check-label" for="reviewNotifications">
+                                Уведомления о ответах на отзывы
+                            </label>
+                        </div>
+                        <div class="form-check form-switch">
+                            <input class="form-check-input" type="checkbox" id="newsletterNotifications">
+                            <label class="form-check-label" for="newsletterNotifications">
+                                Подписка на новости и рекомендации
+                            </label>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Account Info -->
+                <div class="card mb-4">
+                    <div class="card-header">
+                        <h5 class="mb-0"><i class="bi bi-info-circle text-accent"></i> Информация об аккаунте</h5>
+                    </div>
+                    <div class="card-body">
+                        <ul class="list-unstyled mb-0">
+                            <li class="mb-2">
+                                <strong>Дата регистрации:</strong>
+                                <span class="text-muted" th:text="${user.createdAt != null} ? ${#temporals.format(user.createdAt, 'dd.MM.yyyy')} : 'N/A'">01.01.2024</span>
+                            </li>
+                            <li class="mb-2">
+                                <strong>Роль:</strong>
+                                <span class="badge bg-primary" th:each="role : ${user.roles}" th:text="${role}">USER</span>
+                            </li>
+                            <li>
+                                <strong>ID пользователя:</strong>
+                                <code class="text-muted" th:text="${user.id}">abc123</code>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Danger Zone -->
+                <div class="card border-danger">
+                    <div class="card-header bg-danger text-white">
+                        <h5 class="mb-0"><i class="bi bi-exclamation-triangle"></i> Опасная зона</h5>
+                    </div>
+                    <div class="card-body">
+                        <p class="text-muted mb-3">После удаления аккаунта все ваши данные будут безвозвратно утеряны.</p>
+                        <button type="button" class="btn btn-outline-danger" data-bs-toggle="modal" data-bs-target="#deleteAccountModal">
+                            <i class="bi bi-trash"></i> Удалить аккаунт
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</main>
+
+<!-- Delete Account Modal -->
+<div class="modal fade" id="deleteAccountModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header bg-danger text-white">
+                <h5 class="modal-title"><i class="bi bi-exclamation-triangle"></i> Удаление аккаунта</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p>Вы уверены, что хотите удалить свой аккаунт? Это действие нельзя отменить.</p>
+                <p class="text-danger"><strong>Будут удалены:</strong></p>
+                <ul class="text-muted">
+                    <li>Ваш профиль и все данные</li>
+                    <li>Списки аниме и избранное</li>
+                    <li>Все ваши отзывы</li>
+                    <li>История просмотров</li>
+                </ul>
+                <form th:action="@{/profile/delete}" method="post">
+                    <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+                    <div class="mb-3">
+                        <label class="form-label">Введите пароль для подтверждения:</label>
+                        <input type="password" class="form-control" name="password" required>
+                    </div>
+                    <div class="d-flex gap-2">
+                        <button type="submit" class="btn btn-danger">
+                            <i class="bi bi-trash"></i> Удалить навсегда
+                        </button>
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Отмена</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+</body>
+</html>

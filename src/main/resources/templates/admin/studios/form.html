@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="ru" xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layout/base :: html(content=~{::main})}">
+<head>
+    <title>Студия - AnimeFan Admin</title>
+</head>
+<body>
+<main>
+    <div class="container py-4">
+        <nav aria-label="breadcrumb" class="mb-4">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a th:href="@{/admin}">Админ панель</a></li>
+                <li class="breadcrumb-item"><a th:href="@{/admin/studios}">Студии</a></li>
+                <li class="breadcrumb-item active" th:text="${isEdit} ? 'Редактирование' : 'Новая студия'">Новая</li>
+            </ol>
+        </nav>
+
+        <div class="row justify-content-center">
+            <div class="col-md-8">
+                <div class="card">
+                    <div class="card-header" th:classappend="${isEdit} ? 'bg-primary text-white' : 'bg-success text-white'">
+                        <h5 class="mb-0">
+                            <i class="bi" th:classappend="${isEdit} ? 'bi-pencil' : 'bi-plus-circle'"></i>
+                            <span th:text="${isEdit} ? 'Редактировать студию' : 'Новая студия'">Студия</span>
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <form th:action="${isEdit} ? @{/admin/studios/{id}/edit(id=${studio.id})} : @{/admin/studios/new}"
+                              th:object="${studio}" method="post">
+
+                            <div class="mb-3">
+                                <label class="form-label">Название студии *</label>
+                                <input type="text" class="form-control" th:field="*{name}" required
+                                       placeholder="Например: Studio Ghibli">
+                            </div>
+
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label class="form-label">Страна</label>
+                                    <input type="text" class="form-control" th:field="*{country}"
+                                           placeholder="Japan">
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <label class="form-label">Год основания</label>
+                                    <input type="number" class="form-control" th:field="*{foundedYear}"
+                                           min="1900" max="2030" placeholder="1985">
+                                </div>
+                            </div>
+
+                            <div class="mb-3">
+                                <label class="form-label">Описание</label>
+                                <textarea class="form-control" th:field="*{description}" rows="3"
+                                          placeholder="Краткое описание студии..."></textarea>
+                            </div>
+
+                            <div class="mb-3">
+                                <label class="form-label">Веб-сайт</label>
+                                <input type="url" class="form-control" th:field="*{website}"
+                                       placeholder="https://www.studio.com">
+                            </div>
+
+                            <div class="mb-3">
+                                <label class="form-label">Логотип (URL)</label>
+                                <input type="url" class="form-control" th:field="*{logoUrl}"
+                                       placeholder="https://...logo.png">
+                            </div>
+
+                            <div class="d-flex gap-2">
+                                <button type="submit" class="btn"
+                                        th:classappend="${isEdit} ? 'btn-primary' : 'btn-success'">
+                                    <i class="bi" th:classappend="${isEdit} ? 'bi-check' : 'bi-plus'"></i>
+                                    <span th:text="${isEdit} ? 'Сохранить' : 'Создать'">Сохранить</span>
+                                </button>
+                                <a th:href="@{/admin/studios}" class="btn btn-secondary">Отмена</a>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</main>
+</body>
+</html>

@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="ru" xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
+      th:replace="~{layout/base :: html(content=~{::main})}">
+<head>
+    <title th:text="${profileUser.displayName != null} ? ${profileUser.displayName} : ${profileUser.username} + ' - AnimeFan'">Profile - AnimeFan</title>
+</head>
+<body>
+<main>
+    <div class="container py-5">
+        <!-- Profile Header -->
+        <div class="card glass-effect mb-4">
+            <div class="card-body p-4">
+                <div class="row align-items-center">
+                    <div class="col-auto">
+                        <img th:src="${profileUser.avatarUrl != null} ? ${profileUser.avatarUrl} : 'https://via.placeholder.com/120x120?text=User'"
+                             class="profile-avatar" width="120" height="120">
+                    </div>
+                    <div class="col">
+                        <h2 class="fw-bold mb-1" th:text="${profileUser.displayName != null} ? ${profileUser.displayName} : ${profileUser.username}">Username</h2>
+                        <p class="text-muted mb-2">@<span th:text="${profileUser.username}">username</span></p>
+                        <p class="mb-2" th:if="${profileUser.bio != null}" th:text="${profileUser.bio}">Bio</p>
+                        <small class="text-muted">
+                            <i class="bi bi-calendar3"></i> На сайте с <span th:text="${#temporals.format(profileUser.createdAt, 'MMMM yyyy')}">Date</span>
+                        </small>
+                    </div>
+                    <div class="col-auto" th:if="${isOwnProfile}">
+                        <a th:href="@{/profile/edit}" class="btn btn-primary">
+                            <i class="bi bi-pencil"></i> Редактировать
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Statistics -->
+        <div class="row mb-4 g-3">
+            <div class="col-md-3 col-6">
+                <div class="card text-center h-100">
+                    <div class="card-body py-4">
+                        <h3 class="text-accent fw-bold mb-1" th:text="${userStats.completedCount}">0</h3>
+                        <small class="text-muted">Просмотрено</small>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3 col-6">
+                <div class="card text-center h-100">
+                    <div class="card-body py-4">
+                        <h3 class="text-success fw-bold mb-1" th:text="${userStats.watchingCount}">0</h3>
+                        <small class="text-muted">Смотрю</small>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3 col-6">
+                <div class="card text-center h-100">
+                    <div class="card-body py-4">
+                        <h3 class="text-danger fw-bold mb-1" th:text="${userStats.favoritesCount}">0</h3>
+                        <small class="text-muted">Избранное</small>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3 col-6">
+                <div class="card text-center h-100">
+                    <div class="card-body py-4">
+                        <h3 class="fw-bold mb-1" style="color: #17a2b8;" th:text="${userStats.reviewCount}">0</h3>
+                        <small class="text-muted">Отзывов</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- List Tabs -->
+        <ul class="nav nav-tabs mb-4">
+            <li class="nav-item">
+                <a class="nav-link" th:classappend="${activeTab == 'watching'} ? 'active'"
+                   th:href="@{/profile/{u}(u=${profileUser.username}, tab='watching')}">
+                    <i class="bi bi-play-circle"></i> Смотрю
+                    <span class="badge bg-secondary ms-1" th:text="${userStats.watchingCount}">0</span>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" th:classappend="${activeTab == 'completed'} ? 'active'"
+                   th:href="@{/profile/{u}(u=${profileUser.username}, tab='completed')}">
+                    <i class="bi bi-check-circle"></i> Просмотрено
+                    <span class="badge bg-secondary" th:text="${userStats.completedCount}">0</span>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" th:classappend="${activeTab == 'onhold'} ? 'active'"
+                   th:href="@{/profile/{u}(u=${profileUser.username}, tab='onhold')}">
+                    <i class="bi bi-pause-circle"></i> Отложено
+                    <span class="badge bg-secondary" th:text="${userStats.onHoldCount}">0</span>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" th:classappend="${activeTab == 'planned'} ? 'active'"
+                   th:href="@{/profile/{u}(u=${profileUser.username}, tab='planned')}">
+                    <i class="bi bi-bookmark"></i> Запланировано
+                    <span class="badge bg-secondary" th:text="${userStats.planToWatchCount}">0</span>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" th:classappend="${activeTab == 'favorites'} ? 'active'"
+                   th:href="@{/profile/{u}(u=${profileUser.username}, tab='favorites')}">
+                    <i class="bi bi-heart-fill text-danger"></i> Избранное
+                    <span class="badge bg-secondary" th:text="${userStats.favoritesCount}">0</span>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" th:classappend="${activeTab == 'reviews'} ? 'active'"
+                   th:href="@{/profile/{u}(u=${profileUser.username}, tab='reviews')}">
+                    <i class="bi bi-chat-quote"></i> Отзывы
+                    <span class="badge bg-secondary" th:text="${userStats.reviewCount}">0</span>
+                </a>
+            </li>
+        </ul>
+
+        <!-- List Content -->
+        <div th:if="${activeTab != 'reviews'}">
+            <div class="row row-cols-2 row-cols-md-4 row-cols-lg-6 g-3">
+                <div class="col" th:each="relation : ${listContent.content}">
+                    <div class="card h-100 anime-card">
+                        <div class="position-relative">
+                            <img th:src="${relation.animePosterUrl != null} ? ${relation.animePosterUrl} : 'https://via.placeholder.com/300x450?text=No+Image'"
+                                 class="card-img-top" style="height: 200px; object-fit: cover;">
+                            <span class="position-absolute top-0 end-0 badge bg-success m-1" th:if="${relation.userRating != null}">
+                                <i class="bi bi-star-fill"></i> <span th:text="${relation.userRating}">0</span>
+                            </span>
+                            <span class="position-absolute bottom-0 start-0 badge bg-danger m-1" th:if="${relation.favorite}">
+                                <i class="bi bi-heart-fill"></i>
+                            </span>
+                        </div>
+                        <div class="card-body p-2">
+                            <h6 class="card-title small text-truncate mb-1" th:text="${relation.animeTitle}">Title</h6>
+                            <small class="text-muted" th:if="${relation.episodesWatched != null}">
+                                <span th:text="${relation.episodesWatched}">0</span>/<span th:text="${relation.totalEpisodes} ?: '?'">?</span> эп.
+                            </small>
+                        </div>
+                        <a th:href="@{/anime/{id}(id=${relation.animeId})}" class="stretched-link"></a>
+                    </div>
+                </div>
+            </div>
+
+            <p class="text-center text-muted py-4" th:if="${listContent.content.isEmpty()}">
+                Список пуст
+            </p>
+        </div>
+
+        <!-- Reviews Content -->
+        <div th:if="${activeTab == 'reviews'}">
+            <div th:each="review : ${listContent.content}" class="card mb-3">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-start mb-2">
+                        <div>
+                            <a th:href="@{/anime/{id}(id=${review.animeId})}" class="text-decoration-none">
+                                <strong th:text="${review.animeTitle}">Anime Title</strong>
+                            </a>
+                            <br>
+                            <small class="text-muted" th:text="${#temporals.format(review.createdAt, 'dd.MM.yyyy')}">Date</small>
+                        </div>
+                        <span class="badge bg-success fs-6">
+                            <i class="bi bi-star-fill"></i> <span th:text="${review.rating}">10</span>
+                        </span>
+                    </div>
+                    <h6 th:if="${review.title != null}" th:text="${review.title}">Review Title</h6>
+                    <p th:text="${review.text}" class="mb-0" style="white-space: pre-line;">Review text</p>
+                </div>
+            </div>
+
+            <p class="text-center text-muted py-4" th:if="${listContent.content.isEmpty()}">
+                Пока нет отзывов
+            </p>
+        </div>
+
+        <!-- Pagination -->
+        <nav th:if="${listContent.totalPages > 1}" class="mt-4">
+            <ul class="pagination justify-content-center">
+                <li th:each="i : ${#numbers.sequence(0, listContent.totalPages - 1)}"
+                    class="page-item" th:classappend="${i == listContent.number} ? 'active'">
+                    <a class="page-link"
+                       th:href="@{/profile/{u}(u=${profileUser.username}, tab=${activeTab}, page=${i})}"
+                       th:text="${i + 1}">1</a>
+                </li>
+            </ul>
+        </nav>
+    </div>
+</main>
+</body>
+</html>

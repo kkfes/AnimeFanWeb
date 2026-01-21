@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="ru" xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
+      th:replace="~{layout/base :: html(content=~{::main})}">
+<head>
+    <title>AnimeFan - Главная</title>
+</head>
+<body>
+<main>
+    <!-- Banner Slider -->
+    <section class="banner-slider position-relative" th:if="${banners != null and !banners.isEmpty()}">
+        <div id="heroCarousel" class="carousel slide" data-bs-ride="carousel">
+            <div class="carousel-indicators">
+                <button th:each="banner, stat : ${banners}" th:if="${banner != null}"
+                        type="button"
+                        data-bs-target="#heroCarousel"
+                        th:data-bs-slide-to="${stat.index}"
+                        th:classappend="${stat.index == 0} ? 'active'"
+                        th:attr="aria-current=${stat.index == 0} ? 'true' : 'false'"></button>
+            </div>
+            <div class="carousel-inner">
+                <div class="carousel-item" th:each="banner, stat : ${banners}" th:if="${banner != null}" th:classappend="${stat.index == 0} ? 'active'">
+                    <div class="banner-slide"
+                         th:style="${banner.imageUrl != null} ? 'background-image: url(' + ${banner.imageUrl} + ');' : ''"
+                         style="height: 500px; background-size: cover; background-position: center; border-radius: 0;">
+                        <div class="banner-overlay" style="border-radius: 0;"></div>
+                        <div class="container h-100 d-flex align-items-center position-relative" style="z-index: 2;">
+                            <div class="banner-content text-white">
+                                <h1 class="display-4 fw-bold mb-3" th:text="${banner.title ?: 'AnimeFan'}" style="margin-top: 2rem;">Заголовок баннера</h1>
+                                <p class="lead mb-4" th:if="${banner.description != null}" th:text="${banner.description}" style="max-width: 600px;">Описание баннера</p>
+                                <a th:href="${banner.buttonUrl ?: '#'}" class="btn btn-primary btn-lg" th:if="${banner.buttonUrl != null}">
+                                    <span th:text="${banner.buttonText ?: 'Подробнее'}">Смотреть</span>
+                                    <i class="bi bi-arrow-right ms-2"></i>
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <button class="carousel-control-prev" type="button" data-bs-target="#heroCarousel" data-bs-slide="prev">
+                <span class="carousel-control-prev-icon"></span>
+            </button>
+            <button class="carousel-control-next" type="button" data-bs-target="#heroCarousel" data-bs-slide="next">
+                <span class="carousel-control-next-icon"></span>
+            </button>
+        </div>
+    </section>
+
+    <!-- Default Hero if no banners -->
+    <section th:if="${banners == null or banners.isEmpty()}"
+             style="background: linear-gradient(135deg, #222222 0%, #333333 100%); padding: 5rem 0;">
+        <div class="container">
+            <div class="row align-items-center">
+                <div class="col-lg-8 mx-auto text-center text-white">
+                    <h1 class="display-4 fw-bold mb-3">
+                        <i class="bi bi-film text-accent"></i> AnimeFan
+                    </h1>
+                    <p class="lead mb-4 opacity-75">Откройте для себя мир аниме!</p>
+                    <a th:href="@{/anime}" class="btn btn-primary btn-lg">
+                        <i class="bi bi-collection-play"></i> Смотреть каталог
+                    </a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- New Episodes Section -->
+    <section class="py-5">
+        <div class="container">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h2 class="section-title mb-0"><i class="bi bi-play-circle"></i> Новые эпизоды</h2>
+                <a th:href="@{/anime}" class="btn btn-outline-primary">Все аниме</a>
+            </div>
+
+            <div class="row row-cols-2 row-cols-md-3 row-cols-lg-4 row-cols-xl-6 g-3">
+                <div class="col" th:each="anime, stat : ${recentAnime}" th:if="${stat.index < 12}">
+                    <a th:href="@{/anime/{id}(id=${anime.id})}" class="text-decoration-none">
+                        <div class="episode-card">
+                            <img th:src="${anime.posterUrl != null} ? ${anime.posterUrl} : 'https://via.placeholder.com/300x450?text=No+Image'"
+                                 class="episode-card-img" th:alt="${anime.title}">
+                            <div class="episode-card-overlay">
+                                <span class="episode-number">
+                                    Эпизод <span th:text="${anime.episodeCount ?: '?'}">12</span>
+                                </span>
+                                <h6 class="episode-title" th:text="${anime.title}">Название аниме</h6>
+                                <div class="episode-info">
+                                    <span th:text="${anime.type ?: 'TV'}">TV</span>
+                                    <span>•</span>
+                                    <span th:text="${anime.episodeCount ?: '?'}">12</span> эп.
+                                    <span>•</span>
+                                    <span th:text="${anime.status ?: 'N/A'}">COMPLETED</span>
+                                    <span>•</span>
+                                    <span th:text="${anime.releaseYear ?: 'N/A'}">2024</span>
+                                </div>
+                                <button class="btn btn-primary btn-sm mt-2">
+                                    <i class="bi bi-play-fill"></i> Смотреть
+                                </button>
+                            </div>
+                        </div>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Top Anime Section -->
+    <section class="py-5" style="background: var(--bg-secondary);">
+        <div class="container">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h2 class="section-title mb-0"><i class="bi bi-trophy"></i> Топ аниме</h2>
+                <a th:href="@{/top}" class="btn btn-outline-primary">Полный рейтинг</a>
+            </div>
+
+            <div class="row row-cols-2 row-cols-md-3 row-cols-lg-5 g-3">
+                <div class="col" th:each="anime, stat : ${topAnime}" th:if="${stat.index < 10}">
+                    <a th:href="@{/anime/{id}(id=${anime.id})}" class="text-decoration-none">
+                        <div class="episode-card" style="height: 280px;">
+                            <img th:src="${anime.posterUrl != null} ? ${anime.posterUrl} : 'https://via.placeholder.com/300x450?text=No+Image'"
+                                 class="episode-card-img" th:alt="${anime.title}">
+                            <!-- Rank badge always visible -->
+                            <span class="position-absolute top-0 start-0 badge fs-6 m-2" style="z-index: 3;"
+                                  th:classappend="${stat.index < 3} ? 'bg-warning text-dark' : 'bg-secondary'">
+                                #<span th:text="${stat.index + 1}">1</span>
+                            </span>
+                            <span class="position-absolute top-0 end-0 badge bg-success m-2" style="z-index: 3;">
+                                <i class="bi bi-star-fill"></i> <span th:text="${#numbers.formatDecimal(anime.rating, 1, 1)}">9.0</span>
+                            </span>
+                            <div class="episode-card-overlay">
+                                <h6 class="episode-title" th:text="${anime.title}">Название</h6>
+                                <div class="episode-info">
+                                    <span th:text="${anime.type ?: 'TV'}">TV</span>
+                                    <span>•</span>
+                                    <span th:text="${anime.releaseYear}">2024</span>
+                                </div>
+                                <button class="btn btn-primary btn-sm mt-2">
+                                    <i class="bi bi-play-fill"></i> Смотреть
+                                </button>
+                            </div>
+                        </div>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Genres Section -->
+    <section class="py-5">
+        <div class="container">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h2 class="section-title mb-0"><i class="bi bi-tags"></i> Жанры</h2>
+                <a th:href="@{/genres}" class="btn btn-outline-primary">Все жанры</a>
+            </div>
+
+            <div class="row row-cols-2 row-cols-md-3 row-cols-lg-4 row-cols-xl-6 g-3">
+                <div class="col" th:each="genre : ${genres}">
+                    <a th:href="@{/genre/{name}(name=${genre.name})}" class="text-decoration-none">
+                        <div class="genre-card position-relative overflow-hidden" style="height: 140px;">
+                            <img th:if="${genre.bannerUrl != null}"
+                                 th:src="${genre.bannerUrl}"
+                                 class="w-100 h-100" style="object-fit: cover;">
+                            <div th:if="${genre.bannerUrl == null}"
+                                 class="w-100 h-100 d-flex align-items-center justify-content-center"
+                                 style="background: linear-gradient(135deg, #FA8112 0%, #e67300 100%);">
+                            </div>
+                            <div class="genre-overlay"></div>
+                            <div class="genre-content position-absolute bottom-0 start-0 end-0 p-3 text-white">
+                                <h6 class="mb-0 fw-bold" th:text="${genre.nameRu ?: genre.name}">Жанр</h6>
+                                <small class="opacity-75">
+                                    <span th:text="${genre.animeCount ?: 0}">0</span> релизов
+                                </small>
+                            </div>
+                        </div>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Search Section -->
+    <section class="py-5" style="background: var(--bg-secondary);">
+        <div class="container">
+            <div class="row justify-content-center">
+                <div class="col-lg-8 text-center">
+                    <h2 class="section-title mb-4">Найдите своё любимое аниме</h2>
+                    <form th:action="@{/search}" method="get">
+                        <div class="search-input-wrapper d-flex">
+                            <input type="text" name="q" class="form-control form-control-lg flex-grow-1"
+                                   placeholder="Поиск по названию или описанию...">
+                            <button type="submit" class="btn btn-primary btn-lg">
+                                <i class="bi bi-search"></i> Найти
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </section>
+</main>
+</body>
+</html>

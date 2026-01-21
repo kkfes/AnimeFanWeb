@@ -1,0 +1,16 @@
+spring:
+  application:
+    name: AnimeFan-Test
+
+  data:
+    mongodb:
+      uri: mongodb://localhost:27017/animefan_test
+      auto-index-creation: true
+
+  cache:
+    type: none
+
+logging:
+  level:
+    root: WARN
+    com.animefan: DEBUG

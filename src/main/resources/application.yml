@@ -1,0 +1,97 @@
+spring:
+  application:
+    name: AnimeFan
+
+  # MongoDB Configuration
+  data:
+    mongodb:
+      uri: mongodb://localhost:27017/animefan
+      auto-index-creation: true
+
+  # Thymeleaf Configuration
+  thymeleaf:
+    cache: false
+    prefix: classpath:/templates/
+    suffix: .html
+    mode: HTML
+    encoding: UTF-8
+
+  # Security Configuration
+  security:
+    user:
+      name: admin
+      password: admin123
+
+  # Cache Configuration
+  cache:
+    type: caffeine
+    caffeine:
+      spec: maximumSize=500,expireAfterAccess=600s
+
+  # Mail Configuration
+  mail:
+    host: ${MAIL_HOST:smtp.gmail.com}
+    port: ${MAIL_PORT:587}
+    username: ${MAIL_USERNAME:anime.fan.kkfes@gmail.com}
+    password: ${MAIL_PASSWORD:cehnvdbielzzwiei}
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls:
+            enable: true
+          connectiontimeout: 5000
+          timeout: 5000
+          writetimeout: 5000
+
+# Server Configuration
+server:
+  port: 8080
+  error:
+    include-message: always
+    include-binding-errors: always
+    include-stacktrace: never
+    include-exception: false
+    whitelabel:
+      enabled: false
+    path: /error
+
+
+# Logging Configuration
+logging:
+  level:
+    root: INFO
+    com.animefan: DEBUG
+    org.springframework.data.mongodb: DEBUG
+    org.springframework.security: INFO
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss} - %msg%n"
+    file: "%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n"
+  file:
+    name: logs/animefan.log
+
+# Springdoc OpenAPI Configuration
+springdoc:
+  api-docs:
+    path: /api-docs
+  swagger-ui:
+    path: /swagger-ui.html
+    enabled: true
+    operationsSorter: method
+    tagsSorter: alpha
+  show-actuator: false
+
+# Application Custom Properties
+app:
+  name: AnimeFan
+  version: 1.0.0
+  description: Anime Catalog and Streaming Platform
+  pagination:
+    default-page-size: 12
+    max-page-size: 100
+  cache:
+    anime-ttl: 300
+    stats-ttl: 600
+  email:
+    from: ${MAIL_FROM:noreply@animefan.com}
+    base-url: ${APP_BASE_URL:http://localhost:8080}

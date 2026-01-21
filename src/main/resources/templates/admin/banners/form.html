@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="ru" xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layout/base :: html(content=~{::main})}">
+<head>
+    <title>Баннер - AnimeFan Admin</title>
+</head>
+<body>
+<main>
+    <div class="container py-4">
+        <nav aria-label="breadcrumb" class="mb-4">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a th:href="@{/admin}">Админ панель</a></li>
+                <li class="breadcrumb-item"><a th:href="@{/admin/banners}">Баннеры</a></li>
+                <li class="breadcrumb-item active" th:text="${isEdit} ? 'Редактирование' : 'Новый баннер'">Новый</li>
+            </ol>
+        </nav>
+
+        <div class="row">
+            <div class="col-lg-8">
+                <div class="card">
+                    <div class="card-header" th:classappend="${isEdit} ? 'bg-primary text-white' : 'bg-success text-white'">
+                        <h5 class="mb-0">
+                            <i class="bi" th:classappend="${isEdit} ? 'bi-pencil' : 'bi-plus-circle'"></i>
+                            <span th:text="${isEdit} ? 'Редактировать баннер' : 'Новый баннер'">Баннер</span>
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <form th:action="${isEdit} ? @{/admin/banners/{id}/edit(id=${banner.id})} : @{/admin/banners/new}"
+                              th:object="${banner}" method="post">
+
+                            <div class="mb-3">
+                                <label class="form-label">Заголовок *</label>
+                                <input type="text" class="form-control" th:field="*{title}" required
+                                       placeholder="Заголовок баннера">
+                            </div>
+
+                            <div class="mb-3">
+                                <label class="form-label">Описание</label>
+                                <textarea class="form-control" th:field="*{description}" rows="3"
+                                          placeholder="Описание, которое будет отображаться на баннере"></textarea>
+                            </div>
+
+                            <div class="mb-3">
+                                <label class="form-label">Изображение *</label>
+                                <ul class="nav nav-tabs nav-fill mb-2" role="tablist">
+                                    <li class="nav-item">
+                                        <button class="nav-link active" data-bs-toggle="tab" data-bs-target="#bannerUrlTab" type="button">
+                                            <i class="bi bi-link-45deg"></i> URL
+                                        </button>
+                                    </li>
+                                    <li class="nav-item">
+                                        <button class="nav-link" data-bs-toggle="tab" data-bs-target="#bannerUploadTab" type="button">
+                                            <i class="bi bi-upload"></i> Загрузить
+                                        </button>
+                                    </li>
+                                </ul>
+                                <div class="tab-content">
+                                    <div class="tab-pane fade show active" id="bannerUrlTab">
+                                        <input type="url" class="form-control" th:field="*{imageUrl}"
+                                               placeholder="https://example.com/banner.jpg" id="imageUrl">
+                                    </div>
+                                    <div class="tab-pane fade" id="bannerUploadTab">
+                                        <input type="file" class="form-control" name="imageFile" id="imageFile" accept="image/*">
+                                    </div>
+                                </div>
+                                <small class="text-muted">Рекомендуемый размер: 1920x500 пикселей</small>
+                            </div>
+
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label class="form-label">Текст кнопки</label>
+                                    <input type="text" class="form-control" th:field="*{buttonText}"
+                                           placeholder="Смотреть">
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <label class="form-label">Ссылка кнопки</label>
+                                    <input type="text" class="form-control" th:field="*{buttonUrl}"
+                                           placeholder="/anime/123">
+                                </div>
+                            </div>
+
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label class="form-label">Порядок отображения</label>
+                                    <input type="number" class="form-control" th:field="*{order}" min="1" value="1">
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <label class="form-label">Статус</label>
+                                    <div class="form-check form-switch mt-2">
+                                        <input class="form-check-input" type="checkbox" th:field="*{active}" id="activeSwitch">
+                                        <label class="form-check-label" for="activeSwitch">Активен</label>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="d-flex gap-2">
+                                <button type="submit" class="btn"
+                                        th:classappend="${isEdit} ? 'btn-primary' : 'btn-success'">
+                                    <i class="bi" th:classappend="${isEdit} ? 'bi-check' : 'bi-plus'"></i>
+                                    <span th:text="${isEdit} ? 'Сохранить' : 'Создать'">Сохранить</span>
+                                </button>
+                                <a th:href="@{/admin/banners}" class="btn btn-secondary">Отмена</a>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-lg-4">
+                <div class="card">
+                    <div class="card-header">
+                        <h6 class="mb-0"><i class="bi bi-eye"></i> Предпросмотр</h6>
+                    </div>
+                    <div class="card-body p-0">
+                        <div id="previewContainer" class="position-relative" style="height: 200px; overflow: hidden;">
+                            <img id="previewImage"
+                                 th:src="${banner.imageUrl != null} ? ${banner.imageUrl} : 'https://via.placeholder.com/800x400?text=Превью+баннера'"
+                                 class="w-100 h-100" style="object-fit: cover;">
+                            <div class="position-absolute bottom-0 start-0 end-0 p-3 text-white"
+                                 style="background: linear-gradient(transparent, rgba(0,0,0,0.8));">
+                                <h6 id="previewTitle" class="mb-1" th:text="${banner.title ?: 'Заголовок'}">Заголовок</h6>
+                                <small id="previewDesc" th:text="${banner.description ?: 'Описание'}">Описание</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const imageUrl = document.getElementById('imageUrl');
+            const titleInput = document.querySelector('input[name="title"]');
+            const descInput = document.querySelector('textarea[name="description"]');
+            const previewImage = document.getElementById('previewImage');
+            const previewTitle = document.getElementById('previewTitle');
+            const previewDesc = document.getElementById('previewDesc');
+
+            imageUrl.addEventListener('input', function() {
+                if (this.value) {
+                    previewImage.src = this.value;
+                }
+            });
+
+            titleInput.addEventListener('input', function() {
+                previewTitle.textContent = this.value || 'Заголовок';
+            });
+
+            descInput.addEventListener('input', function() {
+                previewDesc.textContent = this.value || 'Описание';
+            });
+        });
+    </script>
+</main>
+</body>
+</html>

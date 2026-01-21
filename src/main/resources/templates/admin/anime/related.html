@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html lang="ru" xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layout/base :: html(content=~{::main})}">
+<head>
+    <title>Связанные релизы - AnimeFan</title>
+</head>
+<body>
+<main>
+    <div class="container py-4">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <div>
+                <nav aria-label="breadcrumb">
+                    <ol class="breadcrumb mb-0">
+                        <li class="breadcrumb-item"><a th:href="@{/admin}">Админ</a></li>
+                        <li class="breadcrumb-item"><a th:href="@{/admin/anime}">Аниме</a></li>
+                        <li class="breadcrumb-item active" th:text="${anime.title}">Аниме</li>
+                    </ol>
+                </nav>
+                <h1 class="mb-0"><i class="bi bi-link-45deg"></i> Связанные релизы</h1>
+            </div>
+            <a th:href="@{/admin/anime/{id}/edit(id=${anime.id})}" class="btn btn-outline-secondary">
+                <i class="bi bi-arrow-left"></i> Назад
+            </a>
+        </div>
+
+        <!-- Alerts -->
+        <div th:if="${success}" class="alert alert-success alert-dismissible fade show">
+            <i class="bi bi-check-circle"></i> <span th:text="${success}">Success</span>
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+        <div th:if="${error}" class="alert alert-danger alert-dismissible fade show">
+            <i class="bi bi-exclamation-triangle"></i> <span th:text="${error}">Error</span>
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+
+        <div class="row">
+            <!-- Current Anime Info -->
+            <div class="col-md-4 mb-4">
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="mb-0">Текущее аниме</h5>
+                    </div>
+                    <div class="card-body text-center">
+                        <img th:src="${anime.posterUrl != null} ? ${anime.posterUrl} : 'https://via.placeholder.com/150x220?text=No'"
+                             class="rounded mb-3" style="max-height: 220px;">
+                        <h5 th:text="${anime.title}">Title</h5>
+                        <p class="text-muted mb-0" th:text="${anime.releaseYear}">2024</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Add Related Anime Form -->
+            <div class="col-md-8 mb-4">
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="mb-0"><i class="bi bi-plus-circle"></i> Добавить связь</h5>
+                    </div>
+                    <div class="card-body">
+                        <form th:action="@{/admin/anime/{id}/related/add(id=${anime.id})}" method="post">
+                            <div class="mb-3">
+                                <label class="form-label">Поиск аниме</label>
+                                <div class="position-relative">
+                                    <input type="text" class="form-control" id="animeSearchInput"
+                                           placeholder="Начните вводить название..." autocomplete="off">
+                                    <input type="hidden" name="relatedAnimeId" id="relatedAnimeId" required>
+                                    <div id="searchResults" class="list-group position-absolute w-100 shadow"
+                                         style="z-index: 1000; max-height: 300px; overflow-y: auto; display: none;"></div>
+                                </div>
+                                <div id="selectedAnime" class="mt-2" style="display: none;">
+                                    <div class="d-flex align-items-center gap-2 p-2 bg-light rounded">
+                                        <img id="selectedPoster" src="" width="40" height="60" class="rounded" style="object-fit: cover;">
+                                        <div>
+                                            <strong id="selectedTitle"></strong>
+                                            <small class="text-muted d-block" id="selectedYear"></small>
+                                        </div>
+                                        <button type="button" class="btn btn-sm btn-outline-danger ms-auto" onclick="clearSelection()">
+                                            <i class="bi bi-x"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label class="form-label">Тип связи</label>
+                                    <select name="relationType" class="form-select" id="relationType" required>
+                                        <option th:each="type : ${relationTypes}"
+                                                th:value="${type.name()}"
+                                                th:text="${type.displayName}">Type</option>
+                                    </select>
+                                </div>
+                                <div class="col-md-6 mb-3" id="seasonNumberGroup" style="display: none;">
+                                    <label class="form-label">Номер сезона</label>
+                                    <input type="number" name="seasonNumber" class="form-control" min="1" max="99" placeholder="2">
+                                </div>
+                            </div>
+
+                            <button type="submit" class="btn btn-primary" id="addBtn" disabled>
+                                <i class="bi bi-plus-circle"></i> Добавить связь
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Current Relations -->
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="bi bi-diagram-3"></i> Текущие связи</h5>
+            </div>
+            <div class="card-body">
+                <div th:if="${anime.relatedAnime == null or anime.relatedAnime.isEmpty()}" class="text-center text-muted py-4">
+                    <i class="bi bi-link-45deg display-4"></i>
+                    <p class="mb-0">Связанные релизы не добавлены</p>
+                </div>
+
+                <div class="row g-3" th:if="${anime.relatedAnime != null and !anime.relatedAnime.isEmpty()}">
+                    <div th:each="related : ${anime.relatedAnime}" class="col-md-6 col-lg-4">
+                        <div class="card h-100">
+                            <div class="card-body d-flex gap-3">
+                                <img th:src="${related.posterUrl != null} ? ${related.posterUrl} : 'https://via.placeholder.com/60x90?text=No'"
+                                     width="60" height="90" class="rounded" style="object-fit: cover;">
+                                <div class="flex-grow-1">
+                                    <span class="badge mb-1"
+                                          th:classappend="${related.relationType.name() == 'SEASON'} ? 'bg-primary' :
+                                                         (${related.relationType.name() == 'SEQUEL'} ? 'bg-success' :
+                                                         (${related.relationType.name() == 'PREQUEL'} ? 'bg-info' : 'bg-secondary'))"
+                                          th:text="${related.relationType.displayName} + (${related.seasonNumber != null} ? ' ' + ${related.seasonNumber} : '')">
+                                        Type
+                                    </span>
+                                    <h6 class="mb-1">
+                                        <a th:href="@{/anime/{id}(id=${related.animeId})}" th:text="${related.title}" target="_blank">
+                                            Title
+                                        </a>
+                                    </h6>
+                                    <form th:action="@{/admin/anime/{id}/related/{relatedId}/delete(id=${anime.id}, relatedId=${related.animeId})}"
+                                          method="post" class="d-inline"
+                                          onsubmit="return confirm('Удалить эту связь?')">
+                                        <button type="submit" class="btn btn-sm btn-outline-danger">
+                                            <i class="bi bi-trash"></i> Удалить
+                                        </button>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Relation Types Help -->
+        <div class="card mt-4">
+            <div class="card-header">
+                <h6 class="mb-0"><i class="bi bi-question-circle"></i> Типы связей</h6>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <ul class="list-unstyled mb-0">
+                            <li><span class="badge bg-primary">Сезон</span> — Другой сезон того же аниме</li>
+                            <li><span class="badge bg-success">Продолжение</span> — Сиквел, продолжение истории</li>
+                            <li><span class="badge bg-info">Приквел</span> — События до основной истории</li>
+                            <li><span class="badge bg-secondary">Побочная история</span> — Параллельные события</li>
+                        </ul>
+                    </div>
+                    <div class="col-md-6">
+                        <ul class="list-unstyled mb-0">
+                            <li><span class="badge bg-secondary">Спин-офф</span> — Отдельная история с персонажами</li>
+                            <li><span class="badge bg-secondary">Фильм</span> — Полнометражный фильм</li>
+                            <li><span class="badge bg-secondary">OVA / Спецвыпуск</span> — Дополнительные эпизоды</li>
+                            <li><span class="badge bg-secondary">Альтернативная версия</span> — Ремейк или переосмысление</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script th:inline="javascript">
+        const animeId = /*[[${anime.id}]]*/ '';
+        let searchTimeout;
+
+        document.getElementById('animeSearchInput').addEventListener('input', function() {
+            const query = this.value.trim();
+            const resultsDiv = document.getElementById('searchResults');
+
+            clearTimeout(searchTimeout);
+
+            if (query.length < 2) {
+                resultsDiv.style.display = 'none';
+                return;
+            }
+
+            searchTimeout = setTimeout(() => {
+                fetch(`/admin/anime/search-for-relation?query=${encodeURIComponent(query)}&excludeId=${animeId}`)
+                    .then(response => response.json())
+                    .then(data => {
+                        resultsDiv.innerHTML = '';
+                        if (data.length === 0) {
+                            resultsDiv.innerHTML = '<div class="list-group-item text-muted">Ничего не найдено</div>';
+                        } else {
+                            data.forEach(item => {
+                                const div = document.createElement('div');
+                                div.className = 'list-group-item list-group-item-action d-flex align-items-center gap-2';
+                                div.style.cursor = 'pointer';
+                                div.innerHTML = `
+                                    <img src="${item.posterUrl || 'https://via.placeholder.com/30x45?text=No'}"
+                                         width="30" height="45" class="rounded" style="object-fit: cover;">
+                                    <div>
+                                        <strong>${item.title}</strong>
+                                        <small class="text-muted d-block">${item.year || ''}</small>
+                                    </div>
+                                `;
+                                div.addEventListener('click', () => selectAnime(item));
+                                resultsDiv.appendChild(div);
+                            });
+                        }
+                        resultsDiv.style.display = 'block';
+                    });
+            }, 300);
+        });
+
+        function selectAnime(item) {
+            document.getElementById('relatedAnimeId').value = item.id;
+            document.getElementById('selectedTitle').textContent = item.title;
+            document.getElementById('selectedYear').textContent = item.year || '';
+            document.getElementById('selectedPoster').src = item.posterUrl || 'https://via.placeholder.com/40x60?text=No';
+            document.getElementById('selectedAnime').style.display = 'block';
+            document.getElementById('searchResults').style.display = 'none';
+            document.getElementById('animeSearchInput').value = '';
+            document.getElementById('addBtn').disabled = false;
+        }
+
+        function clearSelection() {
+            document.getElementById('relatedAnimeId').value = '';
+            document.getElementById('selectedAnime').style.display = 'none';
+            document.getElementById('addBtn').disabled = true;
+        }
+
+        document.getElementById('relationType').addEventListener('change', function() {
+            const seasonGroup = document.getElementById('seasonNumberGroup');
+            seasonGroup.style.display = this.value === 'SEASON' ? 'block' : 'none';
+        });
+
+        // Close search results when clicking outside
+        document.addEventListener('click', function(e) {
+            if (!e.target.closest('#animeSearchInput') && !e.target.closest('#searchResults')) {
+                document.getElementById('searchResults').style.display = 'none';
+            }
+        });
+    </script>
+</main>
+</body>
+</html>

@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout/base}">
+
+<head>
+    <title>AnimeFan - Повторная отправка подтверждения</title>
+</head>
+
+<body>
+<div layout:fragment="content">
+    <div class="container py-5">
+        <div class="row justify-content-center">
+            <div class="col-md-6 col-lg-5">
+                <div class="card shadow-lg border-0">
+                    <div class="card-header bg-primary text-white text-center py-4">
+                        <h3 class="mb-0">
+                            <i class="bi bi-envelope-check me-2"></i>
+                            Повторная отправка
+                        </h3>
+                    </div>
+                    <div class="card-body p-4">
+                        <!-- Error message -->
+                        <div th:if="${error}" class="alert alert-danger alert-dismissible fade show" role="alert">
+                            <i class="bi bi-exclamation-triangle me-2"></i>
+                            <span th:text="${error}"></span>
+                            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                        </div>
+
+                        <!-- Success message -->
+                        <div th:if="${message}" class="alert alert-success alert-dismissible fade show" role="alert">
+                            <i class="bi bi-check-circle me-2"></i>
+                            <span th:text="${message}"></span>
+                            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                        </div>
+
+                        <p class="text-muted mb-4">
+                            Введите ваш email адрес, и мы отправим новое письмо для подтверждения.
+                        </p>
+
+                        <form th:action="@{/resend-verification}" method="post">
+                            <div class="mb-4">
+                                <label for="email" class="form-label">
+                                    <i class="bi bi-envelope me-1"></i> Email
+                                </label>
+                                <input type="email"
+                                       class="form-control form-control-lg"
+                                       id="email"
+                                       name="email"
+                                       placeholder="example@email.com"
+                                       required>
+                            </div>
+
+                            <div class="d-grid gap-2">
+                                <button type="submit" class="btn btn-primary btn-lg">
+                                    <i class="bi bi-send me-2"></i>
+                                    Отправить повторно
+                                </button>
+                            </div>
+                        </form>
+
+                        <hr class="my-4">
+
+                        <div class="text-center">
+                            <p class="mb-2">
+                                <a th:href="@{/login}" class="text-decoration-none">
+                                    <i class="bi bi-arrow-left me-1"></i>
+                                    Вернуться на страницу входа
+                                </a>
+                            </p>
+                            <p class="mb-0">
+                                Нет аккаунта?
+                                <a th:href="@{/register}" class="text-decoration-none fw-bold">
+                                    Зарегистрироваться
+                                </a>
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+</body>
+</html>

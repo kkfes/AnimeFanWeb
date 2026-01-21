@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="ru" xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layout/base :: html(content=~{::main})}">
+<head>
+    <title>Настройки - AnimeFan Admin</title>
+</head>
+<body>
+<main>
+    <div class="container py-4">
+        <nav aria-label="breadcrumb" class="mb-4">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a th:href="@{/admin}">Админ панель</a></li>
+                <li class="breadcrumb-item active">Настройки</li>
+            </ol>
+        </nav>
+
+        <h1 class="mb-4"><i class="bi bi-sliders"></i> Настройки платформы</h1>
+
+        <div class="row">
+            <!-- Quick Links -->
+            <div class="col-md-4 mb-4">
+                <div class="card">
+                    <div class="card-header bg-dark text-white">
+                        <h5 class="mb-0"><i class="bi bi-link-45deg"></i> Быстрые ссылки</h5>
+                    </div>
+                    <div class="list-group list-group-flush">
+                        <a href="/swagger-ui.html" target="_blank" class="list-group-item list-group-item-action">
+                            <i class="bi bi-code-slash text-primary me-2"></i> Swagger API
+                        </a>
+                        <a href="/api-docs" target="_blank" class="list-group-item list-group-item-action">
+                            <i class="bi bi-file-code text-info me-2"></i> OpenAPI JSON
+                        </a>
+                        <a th:href="@{/admin}" class="list-group-item list-group-item-action">
+                            <i class="bi bi-speedometer2 text-warning me-2"></i> Dashboard
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Database Info -->
+            <div class="col-md-4 mb-4">
+                <div class="card">
+                    <div class="card-header bg-success text-white">
+                        <h5 class="mb-0"><i class="bi bi-database"></i> База данных</h5>
+                    </div>
+                    <div class="card-body">
+                        <p><strong>Тип:</strong> MongoDB</p>
+                        <p><strong>Коллекции:</strong></p>
+                        <ul class="list-unstyled ms-3">
+                            <li><i class="bi bi-collection me-2"></i> anime</li>
+                            <li><i class="bi bi-collection me-2"></i> users</li>
+                            <li><i class="bi bi-collection me-2"></i> reviews</li>
+                            <li><i class="bi bi-collection me-2"></i> studios</li>
+                            <li><i class="bi bi-collection me-2"></i> user_anime_relations</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <!-- System Info -->
+            <div class="col-md-4 mb-4">
+                <div class="card">
+                    <div class="card-header bg-info text-white">
+                        <h5 class="mb-0"><i class="bi bi-info-circle"></i> Система</h5>
+                    </div>
+                    <div class="card-body">
+                        <p><strong>Версия:</strong> 1.0.0</p>
+                        <p><strong>Spring Boot:</strong> 3.2.2</p>
+                        <p><strong>Java:</strong> 21</p>
+                        <p><strong>Кэширование:</strong> Caffeine</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Admin Actions -->
+        <div class="card">
+            <div class="card-header bg-warning">
+                <h5 class="mb-0"><i class="bi bi-exclamation-triangle"></i> Административные действия</h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-4 mb-3">
+                        <div class="d-grid">
+                            <a th:href="@{/admin/anime/new}" class="btn btn-outline-primary">
+                                <i class="bi bi-plus-circle"></i> Добавить аниме
+                            </a>
+                        </div>
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <div class="d-grid">
+                            <a th:href="@{/admin/studios/new}" class="btn btn-outline-info">
+                                <i class="bi bi-plus-circle"></i> Добавить студию
+                            </a>
+                        </div>
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <div class="d-grid">
+                            <a th:href="@{/admin/reviews}" class="btn btn-outline-secondary">
+                                <i class="bi bi-chat-quote"></i> Модерация отзывов
+                            </a>
+                        </div>
+                    </div>
+                </div>
+
+                <hr>
+
+                <div class="alert alert-info mb-0">
+                    <i class="bi bi-info-circle me-2"></i>
+                    <strong>Подсказка:</strong> Для управления эпизодами перейдите в редактирование конкретного аниме и нажмите "Управление эпизодами".
+                </div>
+            </div>
+        </div>
+    </div>
+</main>
+</body>
+</html>

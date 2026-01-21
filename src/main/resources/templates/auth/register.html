@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="ru" xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layout/base :: html(content=~{::main})}">
+<head>
+    <title>Регистрация - AnimeFan</title>
+</head>
+<body>
+<main>
+    <div class="container py-5">
+        <div class="row justify-content-center">
+            <div class="col-md-6">
+                <div class="card glass-effect">
+                    <div class="card-header text-center py-4" style="background: transparent; border: none;">
+                        <i class="bi bi-person-plus fs-1 text-accent"></i>
+                        <h4 class="mt-2 mb-0">Создать аккаунт</h4>
+                        <p class="text-muted mb-0">Присоединяйтесь к сообществу AnimeFan</p>
+                    </div>
+                    <div class="card-body p-4">
+                        <div class="alert alert-info" role="alert">
+                            <i class="bi bi-info-circle me-2"></i>
+                            После регистрации вам будет отправлено письмо для подтверждения email.
+                        </div>
+
+                        <div class="alert alert-danger" th:if="${error}" th:text="${error}">
+                            Error message
+                        </div>
+
+                        <form th:action="@{/register}" th:object="${registerForm}" method="post">
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label for="username" class="form-label">Имя пользователя *</label>
+                                    <input type="text" class="form-control" th:field="*{username}"
+                                           th:classappend="${#fields.hasErrors('username')} ? 'is-invalid'"
+                                           placeholder="От 3 до 50 символов" required>
+                                    <div class="invalid-feedback" th:if="${#fields.hasErrors('username')}" th:errors="*{username}">Error</div>
+                                </div>
+
+                                <div class="col-md-6 mb-3">
+                                    <label for="displayName" class="form-label">Отображаемое имя</label>
+                                    <input type="text" class="form-control" th:field="*{displayName}"
+                                           placeholder="Как вас называть?">
+                                </div>
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="email" class="form-label">Email *</label>
+                                <input type="email" class="form-control" th:field="*{email}"
+                                       th:classappend="${#fields.hasErrors('email')} ? 'is-invalid'"
+                                       placeholder="example@email.com" required>
+                                <div class="invalid-feedback" th:if="${#fields.hasErrors('email')}" th:errors="*{email}">Error</div>
+                            </div>
+
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label for="password" class="form-label">Пароль *</label>
+                                    <input type="password" class="form-control" th:field="*{password}"
+                                           th:classappend="${#fields.hasErrors('password')} ? 'is-invalid'"
+                                           placeholder="Минимум 6 символов" required>
+                                    <div class="invalid-feedback" th:if="${#fields.hasErrors('password')}" th:errors="*{password}">Error</div>
+                                </div>
+
+                                <div class="col-md-6 mb-3">
+                                    <label for="confirmPassword" class="form-label">Подтвердите пароль *</label>
+                                    <input type="password" class="form-control" th:field="*{confirmPassword}"
+                                           th:classappend="${#fields.hasErrors('confirmPassword')} ? 'is-invalid'"
+                                           placeholder="Повторите пароль" required>
+                                    <div class="invalid-feedback" th:if="${#fields.hasErrors('confirmPassword')}" th:errors="*{confirmPassword}">Error</div>
+                                </div>
+                            </div>
+
+                            <button type="submit" class="btn btn-primary btn-lg w-100 mb-3">
+                                <i class="bi bi-person-plus"></i> Зарегистрироваться
+                            </button>
+                        </form>
+
+                        <hr class="my-4">
+
+                        <p class="text-center mb-0">
+                            Уже есть аккаунт?
+                            <a th:href="@{/login}" class="text-accent fw-medium">Войти</a>
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</main>
+</body>
+</html>

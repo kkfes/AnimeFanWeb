@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="ru" xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layout/base :: html(content=~{::main})}">
+<head>
+    <title>Жанр - AnimeFan Admin</title>
+</head>
+<body>
+<main>
+    <div class="container py-4">
+        <nav aria-label="breadcrumb" class="mb-4">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a th:href="@{/admin}">Админ панель</a></li>
+                <li class="breadcrumb-item"><a th:href="@{/admin/genres}">Жанры</a></li>
+                <li class="breadcrumb-item active" th:text="${isEdit} ? 'Редактирование' : 'Новый жанр'">Новый</li>
+            </ol>
+        </nav>
+
+        <div class="row">
+            <div class="col-lg-8">
+                <div class="card">
+                    <div class="card-header" th:classappend="${isEdit} ? 'bg-primary text-white' : 'bg-success text-white'">
+                        <h5 class="mb-0">
+                            <i class="bi" th:classappend="${isEdit} ? 'bi-pencil' : 'bi-plus-circle'"></i>
+                            <span th:text="${isEdit} ? 'Редактировать жанр' : 'Новый жанр'">Жанр</span>
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <form th:action="${isEdit} ? @{/admin/genres/{id}/edit(id=${genre.id})} : @{/admin/genres/new}"
+                              th:object="${genre}" method="post">
+
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label class="form-label">Название (EN) *</label>
+                                    <input type="text" class="form-control" th:field="*{name}" required
+                                           placeholder="Action">
+                                    <small class="text-muted">Используется в URL</small>
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <label class="form-label">Название (RU)</label>
+                                    <input type="text" class="form-control" th:field="*{nameRu}"
+                                           placeholder="Экшен">
+                                </div>
+                            </div>
+
+                            <div class="mb-3">
+                                <label class="form-label">Описание</label>
+                                <textarea class="form-control" th:field="*{description}" rows="3"
+                                          placeholder="Описание жанра"></textarea>
+                            </div>
+
+                            <div class="mb-3">
+                                <label class="form-label">Баннер жанра</label>
+                                <ul class="nav nav-tabs nav-fill mb-2" role="tablist">
+                                    <li class="nav-item">
+                                        <button class="nav-link active" data-bs-toggle="tab" data-bs-target="#genreUrlTab" type="button">
+                                            <i class="bi bi-link-45deg"></i> URL
+                                        </button>
+                                    </li>
+                                    <li class="nav-item">
+                                        <button class="nav-link" data-bs-toggle="tab" data-bs-target="#genreUploadTab" type="button">
+                                            <i class="bi bi-upload"></i> Загрузить
+                                        </button>
+                                    </li>
+                                </ul>
+                                <div class="tab-content">
+                                    <div class="tab-pane fade show active" id="genreUrlTab">
+                                        <input type="url" class="form-control" th:field="*{bannerUrl}"
+                                               placeholder="https://example.com/genre-banner.jpg" id="bannerUrl">
+                                    </div>
+                                    <div class="tab-pane fade" id="genreUploadTab">
+                                        <input type="file" class="form-control" name="bannerFile" id="bannerFile" accept="image/*">
+                                    </div>
+                                </div>
+                                <small class="text-muted">Рекомендуемый размер: 400x200 пикселей</small>
+                            </div>
+
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label class="form-label">Порядок отображения</label>
+                                    <input type="number" class="form-control" th:field="*{order}" min="1" value="1">
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <label class="form-label">Статус</label>
+                                    <div class="form-check form-switch mt-2">
+                                        <input class="form-check-input" type="checkbox" th:field="*{active}" id="activeSwitch">
+                                        <label class="form-check-label" for="activeSwitch">Активен</label>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="d-flex gap-2">
+                                <button type="submit" class="btn"
+                                        th:classappend="${isEdit} ? 'btn-primary' : 'btn-success'">
+                                    <i class="bi" th:classappend="${isEdit} ? 'bi-check' : 'bi-plus'"></i>
+                                    <span th:text="${isEdit} ? 'Сохранить' : 'Создать'">Сохранить</span>
+                                </button>
+                                <a th:href="@{/admin/genres}" class="btn btn-secondary">Отмена</a>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-lg-4">
+                <div class="card">
+                    <div class="card-header">
+                        <h6 class="mb-0"><i class="bi bi-eye"></i> Предпросмотр</h6>
+                    </div>
+                    <div class="card-body p-0">
+                        <div class="genre-card position-relative overflow-hidden" style="height: 150px;">
+                            <img id="previewImage"
+                                 th:src="${genre.bannerUrl != null} ? ${genre.bannerUrl} : ''"
+                                 class="w-100 h-100" style="object-fit: cover;"
+                                 onerror="this.style.display='none'">
+                            <div id="placeholderBg" class="w-100 h-100 position-absolute top-0"
+                                 style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); z-index: -1;">
+                            </div>
+                            <div class="genre-overlay"></div>
+                            <div class="genre-content position-absolute bottom-0 start-0 end-0 p-3 text-white">
+                                <h6 id="previewName" class="mb-0 fw-bold" th:text="${genre.nameRu ?: genre.name ?: 'Название жанра'}">Жанр</h6>
+                                <small class="opacity-75">
+                                    <span th:text="${genre.animeCount ?: 0}">0</span> релизов
+                                </small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const bannerUrl = document.getElementById('bannerUrl');
+            const nameRu = document.querySelector('input[name="nameRu"]');
+            const nameEn = document.querySelector('input[name="name"]');
+            const previewImage = document.getElementById('previewImage');
+            const previewName = document.getElementById('previewName');
+
+            bannerUrl.addEventListener('input', function() {
+                if (this.value) {
+                    previewImage.src = this.value;
+                    previewImage.style.display = 'block';
+                } else {
+                    previewImage.style.display = 'none';
+                }
+            });
+
+            function updateName() {
+                previewName.textContent = nameRu.value || nameEn.value || 'Название жанра';
+            }
+
+            nameRu.addEventListener('input', updateName);
+            nameEn.addEventListener('input', updateName);
+        });
+    </script>
+</main>
+</body>
+</html>

@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="ru" xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
+      th:replace="~{layout/base :: html(content=~{::main})}">
+<head>
+    <title>Админ панель - AnimeFan</title>
+</head>
+<body>
+<main>
+    <div class="container py-5">
+        <h1 class="section-title mb-4"><i class="bi bi-gear"></i> Админ панель</h1>
+
+        <!-- Statistics Cards -->
+        <div class="row mb-4 g-3">
+            <div class="col-md-3 col-6">
+                <div class="card h-100" style="background: var(--accent); color: white;">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <h3 class="fw-bold mb-0" th:text="${stats.totalAnime}">0</h3>
+                                <p class="mb-0 opacity-75">Аниме</p>
+                            </div>
+                            <i class="bi bi-collection-play fs-1 opacity-50"></i>
+                        </div>
+                    </div>
+                    <a th:href="@{/admin/anime}" class="card-footer text-white text-decoration-none d-block" style="background: rgba(0,0,0,0.1);">
+                        Управление <i class="bi bi-arrow-right"></i>
+                    </a>
+                </div>
+            </div>
+
+            <div class="col-md-3 col-6">
+                <div class="card h-100 bg-success text-white">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <h3 class="fw-bold mb-0" th:text="${stats.totalUsers}">0</h3>
+                                <p class="mb-0 opacity-75">Пользователей</p>
+                            </div>
+                            <i class="bi bi-people fs-1 opacity-50"></i>
+                        </div>
+                    </div>
+                    <a th:href="@{/admin/users}" class="card-footer text-white text-decoration-none d-block" style="background: rgba(0,0,0,0.1);">
+                        Управление <i class="bi bi-arrow-right"></i>
+                    </a>
+                </div>
+            </div>
+
+            <div class="col-md-3 col-6">
+                <div class="card h-100 bg-info text-white">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <h3 class="fw-bold mb-0" th:text="${stats.totalStudios}">0</h3>
+                                <p class="mb-0 opacity-75">Студий</p>
+                            </div>
+                            <i class="bi bi-building fs-1 opacity-50"></i>
+                        </div>
+                    </div>
+                    <a th:href="@{/admin/studios}" class="card-footer text-white text-decoration-none d-block" style="background: rgba(0,0,0,0.1);">
+                        Управление <i class="bi bi-arrow-right"></i>
+                    </a>
+                </div>
+            </div>
+
+            <div class="col-md-3 col-6">
+                <div class="card h-100 bg-warning text-dark">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <h3 class="fw-bold mb-0" th:text="${stats.totalReviews}">0</h3>
+                                <p class="mb-0 opacity-75">Отзывов</p>
+                            </div>
+                            <i class="bi bi-chat-quote fs-1 opacity-50"></i>
+                        </div>
+                    </div>
+                    <a th:href="@{/admin/reviews}" class="card-footer text-dark text-decoration-none d-block" style="background: rgba(0,0,0,0.1);">
+                        Модерация <i class="bi bi-arrow-right"></i>
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Quick Actions -->
+        <div class="row">
+            <div class="col-md-6 mb-4">
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="mb-0"><i class="bi bi-lightning"></i> Быстрые действия</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="d-grid gap-2">
+                            <a th:href="@{/admin/anime/new}" class="btn btn-primary">
+                                <i class="bi bi-plus-circle"></i> Добавить аниме
+                            </a>
+                            <a th:href="@{/admin/studios/new}" class="btn btn-info">
+                                <i class="bi bi-plus-circle"></i> Добавить студию
+                            </a>
+                            <a th:href="@{/admin/banners}" class="btn btn-success">
+                                <i class="bi bi-images"></i> Управление баннерами
+                            </a>
+                            <a th:href="@{/admin/genres}" class="btn btn-purple" style="background-color: #6f42c1; border-color: #6f42c1; color: white;">
+                                <i class="bi bi-tags"></i> Управление жанрами
+                            </a>
+                            <a th:href="@{/admin/reviews}" class="btn btn-warning">
+                                <i class="bi bi-chat-quote"></i> Модерация отзывов
+                            </a>
+                            <a th:href="@{/admin/settings}" class="btn btn-secondary">
+                                <i class="bi bi-sliders"></i> Настройки
+                            </a>
+                            <a href="/swagger-ui.html" target="_blank" class="btn btn-outline-secondary">
+                                <i class="bi bi-code-slash"></i> API документация
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-6 mb-4">
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="mb-0"><i class="bi bi-trophy"></i> Топ жанры</h5>
+                    </div>
+                    <div class="card-body">
+                        <ul class="list-group list-group-flush">
+                            <li th:each="genre, stat : ${stats.genreStats}" th:if="${stat.index < 5}"
+                                class="list-group-item d-flex justify-content-between align-items-center">
+                                <span th:text="${genre.genre}">Genre</span>
+                                <span class="badge bg-primary rounded-pill" th:text="${genre.animeCount}">0</span>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Top Anime -->
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="mb-0"><i class="bi bi-star"></i> Топ аниме по рейтингу</h5>
+                <a th:href="@{/admin/anime}" class="btn btn-sm btn-outline-primary">Все аниме</a>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>#</th>
+                                <th>Название</th>
+                                <th>Рейтинг</th>
+                                <th>Просмотры</th>
+                                <th>Действия</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr th:each="anime, stat : ${stats.topAnime}" th:if="${stat.index < 10}">
+                                <td th:text="${stat.index + 1}">1</td>
+                                <td>
+                                    <a th:href="@{/anime/{id}(id=${anime.id})}" th:text="${anime.title}">Title</a>
+                                </td>
+                                <td>
+                                    <span class="badge bg-success">
+                                        <i class="bi bi-star-fill"></i>
+                                        <span th:text="${#numbers.formatDecimal(anime.rating, 1, 1)}">0.0</span>
+                                    </span>
+                                </td>
+                                <td th:text="${anime.viewCount}">0</td>
+                                <td>
+                                    <a th:href="@{/admin/anime/{id}/edit(id=${anime.id})}" class="btn btn-sm btn-outline-primary" title="Редактировать">
+                                        <i class="bi bi-pencil"></i>
+                                    </a>
+                                    <a th:href="@{/admin/anime/{id}/episodes(id=${anime.id})}" class="btn btn-sm btn-outline-info" title="Эпизоды">
+                                        <i class="bi bi-film"></i>
+                                    </a>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</main>
+</body>
+</html>

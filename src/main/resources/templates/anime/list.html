@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="ru" xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
+      th:replace="~{layout/base :: html(content=~{::main})}">
+<head>
+    <title>Каталог аниме - AnimeFan</title>
+</head>
+<body>
+<main>
+    <div class="container py-5">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h1 class="section-title mb-0"><i class="bi bi-collection-play"></i> Каталог аниме</h1>
+
+            <!-- Sort Options -->
+            <div class="dropdown">
+                <button type="button" class="btn btn-secondary dropdown-toggle" data-bs-toggle="dropdown">
+                    <i class="bi bi-sort-down"></i> Сортировка
+                </button>
+                <ul class="dropdown-menu dropdown-menu-end">
+                    <li><a class="dropdown-item" th:href="@{/anime(sortBy='rating', sortDirection='desc')}">По рейтингу ↓</a></li>
+                    <li><a class="dropdown-item" th:href="@{/anime(sortBy='rating', sortDirection='asc')}">По рейтингу ↑</a></li>
+                    <li><a class="dropdown-item" th:href="@{/anime(sortBy='title', sortDirection='asc')}">По названию А-Я</a></li>
+                    <li><a class="dropdown-item" th:href="@{/anime(sortBy='releaseYear', sortDirection='desc')}">По году ↓</a></li>
+                    <li><a class="dropdown-item" th:href="@{/anime(sortBy='createdAt', sortDirection='desc')}">Новые</a></li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- Genres Filter -->
+        <div class="mb-4">
+            <div class="d-flex flex-wrap gap-2">
+                <a th:href="@{/anime}" class="filter-chip"
+                   th:classappend="${currentGenre == null} ? 'active'">Все</a>
+                <a th:each="genre : ${genres}"
+                   th:href="@{/genre/{g}(g=${genre})}"
+                   th:text="${genre}"
+                   class="filter-chip">
+                    Genre
+                </a>
+            </div>
+        </div>
+
+        <!-- Anime Grid -->
+        <div class="row row-cols-2 row-cols-md-3 row-cols-lg-4 row-cols-xl-6 g-3">
+            <div class="col" th:each="anime : ${animeList.content}">
+                <div class="anime-card h-100">
+                    <div class="position-relative overflow-hidden" style="height: 260px;">
+                        <img th:src="${anime.posterUrl != null} ? ${anime.posterUrl} : 'https://via.placeholder.com/300x450?text=No+Image'"
+                             class="w-100 h-100"
+                             th:alt="${anime.title}"
+                             style="object-fit: cover;">
+                        <span class="position-absolute top-0 end-0 badge bg-success m-2" th:if="${anime.rating > 0}">
+                            <i class="bi bi-star-fill"></i> <span th:text="${#numbers.formatDecimal(anime.rating, 1, 1)}">0.0</span>
+                        </span>
+                        <span class="position-absolute bottom-0 start-0 badge m-2" th:if="${anime.status == 'ONGOING'}"
+                              style="background: var(--accent);">
+                            Онгоинг
+                        </span>
+                    </div>
+                    <div class="card-body p-3">
+                        <h6 class="card-title text-truncate mb-1" th:text="${anime.title}">Anime Title</h6>
+                        <div class="d-flex justify-content-between">
+                            <small class="text-muted" th:text="${anime.releaseYear}">2024</small>
+                            <small class="text-muted" th:if="${anime.episodeCount != null}">
+                                <i class="bi bi-film"></i> <span th:text="${anime.episodeCount}">12</span> эп.
+                            </small>
+                        </div>
+                    </div>
+                    <a th:href="@{/anime/{id}(id=${anime.id})}" class="stretched-link"></a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Empty State -->
+        <div class="text-center py-5" th:if="${animeList.content.isEmpty()}">
+            <i class="bi bi-inbox display-1 text-muted"></i>
+            <h3 class="text-muted mt-3">Аниме не найдено</h3>
+            <p class="text-muted">Попробуйте изменить параметры поиска</p>
+        </div>
+
+        <!-- Pagination -->
+        <nav th:if="${animeList.totalPages > 1}" class="mt-4">
+            <ul class="pagination justify-content-center">
+                <li class="page-item" th:classappend="${animeList.first} ? 'disabled'">
+                    <a class="page-link" th:href="@{/anime(page=${animeList.number - 1}, sortBy=${sortBy}, sortDirection=${sortDirection})}">
+                        <i class="bi bi-chevron-left"></i>
+                    </a>
+                </li>
+                <li class="page-item" th:each="i : ${#numbers.sequence(0, animeList.totalPages - 1)}"
+                    th:if="${i >= animeList.number - 2 and i <= animeList.number + 2}"
+                    th:classappend="${i == animeList.number} ? 'active'">
+                    <a class="page-link" th:href="@{/anime(page=${i}, sortBy=${sortBy}, sortDirection=${sortDirection})}"
+                       th:text="${i + 1}">1</a>
+                </li>
+                <li class="page-item" th:classappend="${animeList.last} ? 'disabled'">
+                    <a class="page-link" th:href="@{/anime(page=${animeList.number + 1}, sortBy=${sortBy}, sortDirection=${sortDirection})}">
+                        <i class="bi bi-chevron-right"></i>
+                    </a>
+                </li>
+            </ul>
+        </nav>
+    </div>
+</main>
+</body>
+</html>

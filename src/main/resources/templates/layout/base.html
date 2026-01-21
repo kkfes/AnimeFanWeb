@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html lang="ru" xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
+      th:fragment="html(content)">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="_csrf" th:content="${_csrf.token}"/>
+    <meta name="_csrf_header" th:content="${_csrf.headerName}"/>
+    <title th:text="${pageTitle != null ? pageTitle + ' - AnimeFan' : 'AnimeFan - Аниме каталог'}">AnimeFan</title>
+
+    <!-- Theme initialization (prevents flash) -->
+    <script>
+        (function() {
+            const savedTheme = localStorage.getItem('animefan-theme');
+            if (savedTheme) {
+                document.documentElement.setAttribute('data-theme', savedTheme);
+            } else if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
+                document.documentElement.setAttribute('data-theme', 'dark');
+            }
+        })();
+    </script>
+
+    <!-- Favicon -->
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🎌</text></svg>">
+
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Bootstrap Icons -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css" rel="stylesheet">
+    <!-- Custom CSS -->
+    <link th:href="@{/css/style.css}" rel="stylesheet">
+</head>
+<body class="d-flex flex-column min-vh-100">
+
+<!-- Navigation -->
+<nav class="navbar navbar-expand-lg sticky-top">
+    <div class="container">
+        <a class="navbar-brand" th:href="@{/}">
+            <i class="bi bi-film"></i> AnimeFan
+        </a>
+        <button class="navbar-toggler border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+            <i class="bi bi-list fs-4"></i>
+        </button>
+
+        <div class="collapse navbar-collapse" id="navbarNav">
+            <ul class="navbar-nav me-auto">
+                <li class="nav-item">
+                    <a class="nav-link" th:href="@{/}">Главная</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" th:href="@{/anime}">Каталог</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" th:href="@{/top}">Топ</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="#" data-bs-toggle="modal" data-bs-target="#genresModal">Жанры</a>
+                </li>
+            </ul>
+
+            <!-- Search Form -->
+            <form class="d-flex me-2" th:action="@{/search}" method="get">
+                <div class="input-group input-group-sm">
+                    <input class="form-control border-0" type="search" name="q" placeholder="Поиск..."
+                           th:value="${query}" style="border-radius: 50px 0 0 50px; background: var(--bg-primary); min-width: 120px;">
+                    <button class="btn btn-primary btn-sm" type="submit" style="border-radius: 0 50px 50px 0;">
+                        <i class="bi bi-search"></i>
+                    </button>
+                </div>
+            </form>
+
+            <!-- Theme Toggle -->
+            <button id="themeToggle" class="theme-toggle me-2" type="button" title="Переключить тему">
+                <i class="bi bi-moon"></i>
+                <i class="bi bi-sun"></i>
+            </button>
+
+            <!-- User Menu -->
+            <ul class="navbar-nav">
+                <li class="nav-item" sec:authorize="!isAuthenticated()">
+                    <a class="nav-link" th:href="@{/login}">Войти</a>
+                </li>
+                <li class="nav-item" sec:authorize="!isAuthenticated()">
+                    <a class="btn btn-primary btn-sm ms-1" th:href="@{/register}">Регистрация</a>
+                </li>
+
+                <li class="nav-item dropdown" sec:authorize="isAuthenticated()">
+                    <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
+                        <i class="bi bi-person-circle"></i>
+                        <span sec:authentication="name">User</span>
+                    </a>
+                    <ul class="dropdown-menu dropdown-menu-end">
+                        <li><a class="dropdown-item" th:href="@{/profile}">
+                            <i class="bi bi-person"></i> Мой профиль
+                        </a></li>
+                        <li><a class="dropdown-item" th:href="@{/profile(tab='favorites')}">
+                            <i class="bi bi-heart"></i> Избранное
+                        </a></li>
+                        <li><a class="dropdown-item" th:href="@{/profile(tab='watching')}">
+                            <i class="bi bi-play-circle"></i> Смотрю
+                        </a></li>
+                        <li><hr class="dropdown-divider"></li>
+                        <li sec:authorize="hasRole('ADMIN')">
+                            <a class="dropdown-item text-warning" th:href="@{/admin}">
+                                <i class="bi bi-gear"></i> Админ панель
+                            </a>
+                        </li>
+                        <li sec:authorize="hasRole('ADMIN')"><hr class="dropdown-divider"></li>
+                        <li>
+                            <form th:action="@{/logout}" method="post">
+                                <button type="submit" class="dropdown-item">
+                                    <i class="bi bi-box-arrow-right"></i> Выйти
+                                </button>
+                            </form>
+                        </li>
+                    </ul>
+                </li>
+            </ul>
+        </div>
+    </div>
+</nav>
+
+<!-- Flash Messages -->
+<div class="container mt-3" th:if="${message != null or error != null or success != null}">
+    <div class="alert alert-success alert-dismissible fade show" role="alert" th:if="${message != null or success != null}">
+        <th:block th:text="${message != null ? message : success}"></th:block>
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+    <div class="alert alert-danger alert-dismissible fade show" role="alert" th:if="${error != null}">
+        <th:block th:text="${error}"></th:block>
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+</div>
+
+<!-- Main Content -->
+<main class="flex-grow-1">
+    <div th:replace="${content}">
+        <!-- Page content will be inserted here -->
+    </div>
+</main>
+
+<!-- Genres Modal -->
+<div class="modal fade" id="genresModal" tabindex="-1">
+    <div class="modal-dialog modal-fullscreen-md-down modal-xl modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title"><i class="bi bi-tags text-accent"></i> Жанры</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="row row-cols-2 row-cols-md-3 row-cols-lg-4 row-cols-xl-6 g-3" id="genresContainer">
+                    <!-- Genres will be loaded via JavaScript -->
+                </div>
+            </div>
+            <div class="modal-footer">
+                <a href="/genres" class="btn btn-primary">
+                    <i class="bi bi-grid"></i> Посмотреть все
+                </a>
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Закрыть</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Footer -->
+<footer class="pt-5 pb-3 mt-auto">
+    <div class="container">
+        <div class="row">
+            <!-- Logo & Slogan -->
+            <div class="col-lg-4 mb-4">
+                <div class="d-flex align-items-center mb-3">
+                    <i class="bi bi-film fs-2 me-2" style="color: var(--accent);"></i>
+                    <h4 class="mb-0">AnimeFan</h4>
+                </div>
+                <p class="text-muted mb-3">Ваш каталог аниме и стриминг-платформа. Смотрите, оценивайте и делитесь впечатлениями.</p>
+                <div class="d-flex gap-3">
+                    <a href="#" class="fs-4" style="color: var(--text-muted);"><i class="bi bi-telegram"></i></a>
+                    <a href="#" class="fs-4" style="color: var(--text-muted);"><i class="bi bi-discord"></i></a>
+                    <a href="#" class="fs-4" style="color: var(--text-muted);"><i class="bi bi-twitter-x"></i></a>
+                </div>
+            </div>
+
+            <!-- Navigation -->
+            <div class="col-6 col-lg-2 mb-4">
+                <h6 class="text-uppercase mb-3">Навигация</h6>
+                <ul class="list-unstyled">
+                    <li class="mb-2"><a href="/">Главная</a></li>
+                    <li class="mb-2"><a href="/anime">Каталог</a></li>
+                    <li class="mb-2"><a href="/top" class="text-muted text-decoration-none">Топ аниме</a></li>
+                    <li class="mb-2"><a href="/search" class="text-muted text-decoration-none">Поиск</a></li>
+                </ul>
+            </div>
+
+            <!-- User -->
+            <div class="col-6 col-lg-3 mb-4">
+                <h6 class="text-uppercase mb-3">Пользователь</h6>
+                <ul class="list-unstyled">
+                    <li class="mb-2"><a href="/login" class="text-muted text-decoration-none">Авторизация</a></li>
+                    <li class="mb-2"><a href="/register" class="text-muted text-decoration-none">Регистрация</a></li>
+                    <li class="mb-2"><a href="/profile/settings" class="text-muted text-decoration-none">Настройки</a></li>
+                    <li class="mb-2"><a href="/password-reset" class="text-muted text-decoration-none">Восстановить пароль</a></li>
+                </ul>
+            </div>
+
+            <!-- Info -->
+            <div class="col-6 col-lg-3 mb-4">
+                <h6 class="text-uppercase mb-3">Информация</h6>
+                <ul class="list-unstyled">
+                    <li class="mb-2"><a href="/about" class="text-muted text-decoration-none">Правила</a></li>
+                    <li class="mb-2"><a href="https://t.me/kkfes" target="_blank" class="text-muted text-decoration-none">Техническая поддержка</a></li>
+                    <li class="mb-2"><a href="/swagger-ui.html" class="text-muted text-decoration-none">Документация API v1</a></li>
+                    <li class="mb-2"><a href="/status" class="text-muted text-decoration-none">Мониторинг сервисов</a></li>
+                </ul>
+            </div>
+        </div>
+
+        <hr class="my-4 border-secondary">
+
+        <div class="row align-items-center">
+            <div class="col-md-6 text-center text-md-start mb-3 mb-md-0">
+                <small class="text-muted">&copy; 2024 AnimeFan. Все права защищены.</small>
+            </div>
+            <div class="col-md-6 text-center text-md-end">
+                <small class="text-muted">
+                    Весь материал на сайте представлен исключительно для домашнего ознакомительного просмотра.
+                    <br>Создатель: Human
+                </small>
+            </div>
+        </div>
+    </div>
+</footer>
+
+<!-- Bootstrap 5 JS -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+<!-- Custom JS -->
+<script th:src="@{/js/app.js}"></script>
+
+<!-- Genres Modal Script -->
+<script>
+document.getElementById('genresModal').addEventListener('show.bs.modal', function() {
+    const container = document.getElementById('genresContainer');
+    if (container.children.length === 0) {
+        fetch('/api/v1/genres')
+            .then(response => response.json())
+            .then(genres => {
+                container.innerHTML = genres.map(genre => `
+                    <div class="col">
+                        <a href="/genre/${genre.name}" class="text-decoration-none">
+                            <div class="genre-card position-relative overflow-hidden" style="height: 120px;">
+                                ${genre.bannerUrl ?
+                                    `<img src="${genre.bannerUrl}" class="w-100 h-100" style="object-fit: cover;">` :
+                                    `<div class="w-100 h-100" style="background: linear-gradient(135deg, #FA8112 0%, #e67300 100%);"></div>`
+                                }
+                                <div class="genre-overlay"></div>
+                                <div class="genre-content position-absolute bottom-0 start-0 end-0 p-2 text-white">
+                                    <h6 class="mb-0 small fw-bold">${genre.nameRu || genre.name}</h6>
+                                    <small class="opacity-75">${genre.animeCount || 0} релизов</small>
+                                </div>
+                            </div>
+                        </a>
+                    </div>
+                `).join('');
+            })
+            .catch(err => {
+                container.innerHTML = '<div class="col-12 text-center text-muted">Ошибка загрузки жанров</div>';
+            });
+    }
+});
+</script>
+</body>
+</html>
